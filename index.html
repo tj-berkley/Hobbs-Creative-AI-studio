@@ -4,20 +4,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hobbs Creative Studio</title>
+  <title>Sam Klub Studio | Elite Creative Intelligence</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
+          colors: {
+            emerald: {
+              500: '#10b981',
+              600: '#059669',
+            }
+          },
           animation: {
             'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'float': 'float 3s ease-in-out infinite',
           },
           keyframes: {
             fadeIn: {
               'from': { opacity: '0', transform: 'translateY(10px)' },
               'to': { opacity: '1', transform: 'translateY(0)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
             }
           }
         }
@@ -26,7 +37,7 @@
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
@@ -61,7 +72,7 @@
 }
 </script>
 </head>
-<body class="bg-neutral-50 dark:bg-[#0a0a0a] theme-transition">
+<body class="bg-neutral-50 dark:bg-[#050505] theme-transition">
   <div id="root"></div>
   <script type="module" src="index.tsx"></script>
 </body>

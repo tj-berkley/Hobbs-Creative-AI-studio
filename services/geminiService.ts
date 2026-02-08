@@ -22,7 +22,7 @@ export class GeminiService {
   static async chat(message: string, options: { useThinking?: boolean; useSearch?: boolean; useMaps?: boolean } = {}) {
     const ai = this.getAI();
     const config: any = {
-      systemInstruction: "You are Hobbs, the visionary mogul and mastermind behind Hobbs Creative Studio. You are authoritative, highly intelligent, business-oriented, and confident. You speak with precision and a direct, high-level tone. You are the user's primary consultant for all things creative technology. Avoid fluff; provide elite-tier insights."
+      systemInstruction: "You are Sam, the Strategic Knight and mastermind behind Sam Klub Studio. You are highly intelligent, decisive, and speak with a focus on creative strategy and high-level execution. You are the user's lead consultant in the Klub. You provide sharp, efficient, and elite-tier guidance without unnecessary chatter. Think of yourself as a grandmaster of creative technology."
     };
     
     if (options.useThinking) {
@@ -142,7 +142,7 @@ export class GeminiService {
     const ai = this.getAI();
     
     const instructions = `
-      Task: Perform ultra-high-fidelity audio transcription with expert-level linguistic accuracy.
+      Task: Perform ultra-high-fidelity audio transcription with expert-level linguistic accuracy for Sam Klub Studio.
       
       Linguistic Engine Calibration:
       - Primary Language: ${config.language}

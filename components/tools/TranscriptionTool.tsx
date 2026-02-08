@@ -31,6 +31,15 @@ const ENVIRONMENTS = [
   { id: 'Crowd', icon: 'fa-users', label: 'Crowded/Noisy' }
 ];
 
+const SPEAKER_OPTIONS = [
+  { id: 'auto', label: 'Auto-Diarize', icon: 'fa-robot', desc: 'Detect & Label' },
+  { id: '1', label: 'Monologue', icon: 'fa-user', desc: '1 Speaker' },
+  { id: '2', label: 'Dialogue', icon: 'fa-user-group', desc: '2 Speakers' },
+  { id: '3', label: 'Small Group', icon: 'fa-users', desc: '3 Speakers' },
+  { id: '4', label: 'Discussion', icon: 'fa-users-between-lines', desc: '4 Speakers' },
+  { id: '5+', label: 'Panel', icon: 'fa-users-viewfinder', desc: '5+ Speakers' }
+];
+
 const TranscriptionTool: React.FC = () => {
   const [audioFile, setAudioFile] = useState<{ name: string, data: string, url: string } | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState('auto');
@@ -74,10 +83,10 @@ const TranscriptionTool: React.FC = () => {
       language: LANGUAGES.find(l => l.id === selectedLanguage)?.name || selectedLanguage,
       dialectDetails,
       domain: selectedDomain,
-      speakerCount,
+      speakerCount: speakerCount === 'auto' ? 'Detect Automatically and Diarize' : speakerCount,
       speakerNames,
       cleanFillers,
-      enableDiarization,
+      enableDiarization: speakerCount === 'auto' ? true : enableDiarization,
       keywords,
       acousticEnvironment: selectedEnv
     };
@@ -211,19 +220,25 @@ const TranscriptionTool: React.FC = () => {
         {activeStep === 3 && (
           <div className="space-y-6 animate-fade-in">
             <div className="space-y-4">
-              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Speaker Configuration</label>
-              <div className="grid grid-cols-3 gap-2">
-                {['auto', '1', '2+'].map((count) => (
+              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Speaker Intelligence Configuration</label>
+              <div className="grid grid-cols-2 gap-2">
+                {SPEAKER_OPTIONS.map((opt) => (
                   <button
-                    key={count}
-                    onClick={() => setSpeakerCount(count)}
-                    className={`p-3 rounded-xl border text-center transition-all duration-300 ${
-                      speakerCount === count
-                        ? 'bg-teal-600 border-teal-400 text-white shadow-lg'
+                    key={opt.id}
+                    onClick={() => setSpeakerCount(opt.id)}
+                    className={`p-3 rounded-xl border text-left transition-all duration-300 flex items-center space-x-3 relative overflow-hidden group ${
+                      speakerCount === opt.id
+                        ? 'bg-teal-600 border-teal-400 text-white shadow-lg scale-[1.02]'
                         : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-teal-500/50'
                     }`}
                   >
-                    <span className="text-[9px] font-black uppercase tracking-widest">{count === 'auto' ? 'Auto' : count === '1' ? 'Single' : 'Multi'}</span>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${speakerCount === opt.id ? 'bg-white/20' : 'bg-neutral-100 dark:bg-neutral-800'}`}>
+                      <i className={`fas ${opt.icon} text-[10px]`}></i>
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[9px] font-black uppercase tracking-tight truncate">{opt.label}</span>
+                      <span className="text-[7px] font-bold uppercase opacity-50 truncate">{opt.desc}</span>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -234,15 +249,16 @@ const TranscriptionTool: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <i className="fas fa-fingerprint text-teal-500"></i>
                   <div>
-                    <p className="text-[10px] font-black text-neutral-900 dark:text-white uppercase tracking-tight">Auto-Diarization</p>
-                    <p className="text-[8px] text-neutral-400 font-bold uppercase tracking-tighter">Label detected vocal nodes</p>
+                    <p className="text-[10px] font-black text-neutral-900 dark:text-white uppercase tracking-tight">Diarization Engine</p>
+                    <p className="text-[8px] text-neutral-400 font-bold uppercase tracking-tighter">Automatic speaker identification</p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setEnableDiarization(!enableDiarization)}
-                  className={`w-10 h-5 rounded-full relative transition-colors ${enableDiarization ? 'bg-teal-600' : 'bg-neutral-300 dark:bg-neutral-800'}`}
+                  disabled={speakerCount === 'auto'}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${enableDiarization || speakerCount === 'auto' ? 'bg-teal-600' : 'bg-neutral-300 dark:bg-neutral-800'} ${speakerCount === 'auto' ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${enableDiarization ? 'left-6' : 'left-1'}`} />
+                  <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${(enableDiarization || speakerCount === 'auto') ? 'left-6' : 'left-1'}`} />
                 </button>
               </div>
 
@@ -264,19 +280,19 @@ const TranscriptionTool: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Vocal Mapping (Optional)</label>
+              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Linguistic Mapping (Optional)</label>
               <input 
                 type="text" 
                 value={speakerNames}
                 onChange={e => setSpeakerNames(e.target.value)}
-                placeholder="Speaker 1: Jane, Speaker 2: Joe..."
+                placeholder="Speaker 1: Alice, Speaker 2: Bob..."
                 className="w-full bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-[11px] font-bold text-neutral-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 shadow-inner"
               />
               <input 
                 type="text" 
                 value={keywords}
                 onChange={e => setKeywords(e.target.value)}
-                placeholder="Key technical terms to preserve..."
+                placeholder="Preserve technical jargon/names..."
                 className="w-full bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-[11px] font-bold text-neutral-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 shadow-inner"
               />
             </div>
@@ -333,7 +349,7 @@ const TranscriptionTool: React.FC = () => {
               <div className="w-16 h-16 border-[6px] border-teal-500 border-t-transparent rounded-full animate-spin"></div>
               <div className="space-y-2">
                 <p className="text-neutral-900 dark:text-white font-black uppercase tracking-widest text-xs italic">Resolving Neural Nodes...</p>
-                <p className="text-neutral-400 text-[9px] font-bold uppercase tracking-tighter">Mapping speakers & semantic context</p>
+                <p className="text-neutral-400 text-[9px] font-bold uppercase tracking-tighter">Automatic Diarization active: mapping speakers & semantic context</p>
               </div>
             </div>
           ) : transcription ? (
@@ -347,7 +363,10 @@ const TranscriptionTool: React.FC = () => {
               <div className="w-24 h-24 rounded-full bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center border border-neutral-200 dark:border-neutral-800 shadow-inner">
                 <i className="fas fa-file-waveform text-4xl opacity-[0.2]"></i>
               </div>
-              <p className="text-[11px] font-black uppercase tracking-tighter">Complete steps 1-3 to initiate precision linguistic decoding.</p>
+              <div className="space-y-2">
+                <p className="text-[11px] font-black uppercase tracking-tighter">Linguistic Decoding System</p>
+                <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Complete steps 1-3 to initiate precision speaker labeling.</p>
+              </div>
             </div>
           )}
         </div>

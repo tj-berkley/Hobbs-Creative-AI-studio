@@ -1,6 +1,6 @@
 {
-  "name": "Hobbs Creative Studio",
-  "description": "A comprehensive creative platform powered by Gemini and Veo, featuring advanced image and video generation, real-time voice interaction, and intelligent content analysis.",
+  "name": "Sam Klub Studio",
+  "description": "The premier creative infrastructure powered by Sam AI. Elite-tier image and video generation, real-time voice synthesis, and high-fidelity content analysis for visionaries.",
   "requestFramePermissions": [
     "camera",
     "microphone"
