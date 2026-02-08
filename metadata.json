@@ -1,0 +1,8 @@
+{
+  "name": "Hobbs Creative Studio",
+  "description": "A comprehensive creative platform powered by Gemini and Veo, featuring advanced image and video generation, real-time voice interaction, and intelligent content analysis.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
