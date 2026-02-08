@@ -39,7 +39,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
     <div className="min-h-screen bg-neutral-50 dark:bg-[#050505] flex items-center justify-center p-8 relative overflow-hidden theme-transition">
       {/* Background Orbs */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 dark:bg-indigo-600/10 blur-[150px] rounded-full"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/5 dark:bg-purple-600/10 blur-[150px] rounded-full"></div>
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-600/5 dark:bg-amber-600/10 blur-[150px] rounded-full"></div>
 
       <div className="w-full max-w-md bg-white/70 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 rounded-[3rem] p-12 backdrop-blur-2xl shadow-2xl space-y-10 animate-fade-in relative z-10">
         <div className="text-center space-y-3 relative">
@@ -57,8 +57,9 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
             <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
           </button>
 
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl mb-6">
-            <i className="fas fa-crown text-white"></i>
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-2xl border-2 border-amber-400/50 mb-6 group relative bg-neutral-950">
+            <span className="text-amber-400 font-black italic text-4xl select-none">H</span>
+            <div className="absolute inset-0 bg-indigo-600/10 mix-blend-overlay"></div>
           </div>
           <h2 className="text-3xl font-black uppercase italic tracking-tighter text-neutral-900 dark:text-white">
             {mode === 'login' ? 'Studio Access' : 'Create Identity'}
@@ -76,7 +77,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 transition shadow-inner dark:text-white"
+                className="w-full bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 transition shadow-inner dark:text-white"
                 placeholder="John Doe"
               />
             </div>
@@ -87,7 +88,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 transition shadow-inner dark:text-white"
+              className="w-full bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 transition shadow-inner dark:text-white"
               placeholder="name@platform.com"
               required
             />
@@ -95,13 +96,13 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
           <div className="space-y-2">
             <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1 flex justify-between">
               <span>Access Key</span>
-              {mode === 'login' && <span className="text-indigo-600 dark:text-indigo-500 hover:underline cursor-pointer lowercase italic">Forgot?</span>}
+              {mode === 'login' && <span className="text-amber-600 dark:text-amber-500 hover:underline cursor-pointer lowercase italic">Forgot?</span>}
             </label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 transition shadow-inner dark:text-white"
+              className="w-full bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl px-6 py-4 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500 transition shadow-inner dark:text-white"
               placeholder="••••••••"
               required
             />
@@ -116,7 +117,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-500 disabled:opacity-50 transition-all shadow-xl shadow-indigo-600/20 active:scale-95 flex items-center justify-center space-x-2"
+            className="w-full py-5 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-neutral-800 dark:hover:bg-neutral-100 disabled:opacity-50 transition-all shadow-xl active:scale-95 flex items-center justify-center space-x-2"
           >
             {isLoading ? (
               <>
@@ -133,8 +134,8 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
            <p className="text-[10px] text-neutral-500 dark:text-neutral-600 font-bold uppercase tracking-widest">
              {mode === 'login' ? "Don't have access?" : "Already have an account?"}
              <button 
-              onClick={() => {}} // In a real app, toggle mode
-              className="ml-2 text-indigo-600 dark:text-indigo-500 hover:underline"
+              onClick={() => {}} 
+              className="ml-2 text-amber-600 dark:text-amber-500 hover:underline"
              >
                {mode === 'login' ? 'Apply Now' : 'Login'}
              </button>

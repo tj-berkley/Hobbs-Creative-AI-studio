@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../../services/geminiService';
 import { ChatMessage } from '../../types';
-import { HOBBS_AVATAR } from '../../constants';
 
 const ChatTool: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -68,8 +67,8 @@ const ChatTool: React.FC = () => {
       <div className="flex-1 overflow-y-auto space-y-6 mb-8 pr-4 custom-scrollbar" ref={scrollRef}>
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-neutral-400 dark:text-neutral-600 space-y-8 animate-fade-in">
-            <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden border-2 border-indigo-600/30 shadow-2xl shadow-indigo-600/10">
-              <img src={HOBBS_AVATAR} alt="Hobbs" className="w-full h-full object-cover grayscale" />
+            <div className="w-32 h-32 rounded-[2.5rem] flex items-center justify-center border-2 border-indigo-600/30 shadow-2xl shadow-indigo-600/10 bg-neutral-950">
+              <span className="text-amber-400 font-black italic text-6xl select-none">H</span>
             </div>
             <div className="text-center space-y-2">
               <p className="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter italic">Hobbs Core Intelligence</p>
@@ -91,8 +90,8 @@ const ChatTool: React.FC = () => {
           <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-[fadeIn_0.3s_ease-out]`}>
             <div className={`flex items-start space-x-4 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
               {!m.role.includes('user') && (
-                <div className="w-8 h-8 rounded-lg overflow-hidden border border-indigo-500/20 shadow-sm shrink-0 mt-1">
-                  <img src={HOBBS_AVATAR} alt="Hobbs" className="w-full h-full object-cover" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center border border-indigo-500/20 shadow-sm shrink-0 mt-1 bg-neutral-950">
+                   <span className="text-amber-400 font-black italic text-xs select-none">H</span>
                 </div>
               )}
               <div className={`rounded-[2rem] px-8 py-5 shadow-sm border ${
@@ -123,8 +122,8 @@ const ChatTool: React.FC = () => {
         ))}
         {isLoading && (
           <div className="flex justify-start items-center space-x-4">
-             <div className="w-8 h-8 rounded-lg overflow-hidden border border-indigo-500/10 shadow-sm shrink-0">
-               <img src={HOBBS_AVATAR} alt="Hobbs" className="w-full h-full object-cover grayscale opacity-50" />
+             <div className="w-8 h-8 rounded-lg flex items-center justify-center border border-indigo-500/10 shadow-sm shrink-0 bg-neutral-950/50">
+                <span className="text-amber-400/50 font-black italic text-xs select-none">H</span>
              </div>
              <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full px-6 py-3 flex items-center space-x-3 shadow-sm">
                 <div className="flex space-x-1.5">

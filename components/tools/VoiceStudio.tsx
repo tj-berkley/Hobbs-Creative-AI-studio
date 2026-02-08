@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, Modality } from '@google/genai';
-import { MODELS, HOBBS_AVATAR } from '../../constants';
+// Fixed the import to remove non-existent HOBBS_AVATAR
+import { MODELS } from '../../constants';
 import { GeminiService, encode, decode, decodeAudioData } from '../../services/geminiService';
 
 type VoiceMode = 'live' | 'tts';
