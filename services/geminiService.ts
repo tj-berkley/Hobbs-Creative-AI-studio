@@ -204,11 +204,10 @@ export class GeminiService {
       contents: [{ parts }],
       config: {
         responseModalities: [Modality.AUDIO],
+        // Fix: pitch and speakingRate are not valid properties of VoiceConfig in the current SDK
         speechConfig: options.referenceAudio ? undefined : {
           voiceConfig: {
             prebuiltVoiceConfig: { voiceName: options.voiceName || 'Zephyr' },
-            pitch: options.pitch || 1.0,
-            speakingRate: options.speakingRate || 1.0
           },
         },
       },
