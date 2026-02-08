@@ -168,9 +168,9 @@ const TranscriptionTool: React.FC = () => {
           </div>
         )}
 
-        {/* Step 2: Semantic Domain & Environment */}
+        {/* Step 2: Semantic Domain, Environment & Keywords */}
         {activeStep === 2 && (
-          <div className="space-y-6 animate-fade-in">
+          <div className="space-y-8 animate-fade-in">
             <div className="space-y-4">
               <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Semantic Domain</label>
               <div className="grid grid-cols-2 gap-2">
@@ -192,6 +192,22 @@ const TranscriptionTool: React.FC = () => {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="space-y-4">
+              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Technical Glossary & Keywords</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-4 text-teal-500 opacity-40 group-focus-within:opacity-100 transition-opacity">
+                  <i className="fas fa-tags text-xs"></i>
+                </div>
+                <textarea 
+                  value={keywords}
+                  onChange={e => setKeywords(e.target.value)}
+                  placeholder="Enter industry jargon, acronyms, or specific names (e.g. SaaS, CUDA, Hobbs, AI-core)..."
+                  className="w-full bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-2xl pl-10 pr-4 py-4 text-[11px] font-bold text-neutral-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500/30 shadow-inner h-24 resize-none transition-all placeholder:text-neutral-300 dark:placeholder:text-neutral-700"
+                />
+              </div>
+              <p className="px-1 text-[8px] font-bold text-neutral-400 uppercase tracking-widest italic">Supplying keywords helps the engine resolve ambiguous acoustic nodes.</p>
             </div>
 
             <div className="space-y-4">
@@ -280,19 +296,12 @@ const TranscriptionTool: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Linguistic Mapping (Optional)</label>
+              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Speaker Mapping (Optional)</label>
               <input 
                 type="text" 
                 value={speakerNames}
                 onChange={e => setSpeakerNames(e.target.value)}
                 placeholder="Speaker 1: Alice, Speaker 2: Bob..."
-                className="w-full bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-[11px] font-bold text-neutral-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 shadow-inner"
-              />
-              <input 
-                type="text" 
-                value={keywords}
-                onChange={e => setKeywords(e.target.value)}
-                placeholder="Preserve technical jargon/names..."
                 className="w-full bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-[11px] font-bold text-neutral-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 shadow-inner"
               />
             </div>

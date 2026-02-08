@@ -8,6 +8,7 @@ const ImageEditTool: React.FC = () => {
   const [prompt, setPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [activePreset, setActivePreset] = useState<string | null>(null);
+  const [studioQuality, setStudioQuality] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,8 +25,13 @@ const ImageEditTool: React.FC = () => {
   };
 
   const handleEdit = async (customPrompt?: string, presetId?: string) => {
-    const finalPrompt = customPrompt || prompt;
+    let finalPrompt = customPrompt || prompt;
     if (!originalImage || !finalPrompt.trim() || isProcessing) return;
+
+    // Append Studio Standard directives if enabled and it's a custom prompt
+    if (studioQuality && !presetId) {
+      finalPrompt = `${finalPrompt}. Apply professional cinematic lighting and volumetric fog to enhance the atmosphere and depth.`;
+    }
 
     setIsProcessing(true);
     if (presetId) setActivePreset(presetId);
@@ -44,12 +50,12 @@ const ImageEditTool: React.FC = () => {
   };
 
   const handleRemoveBackground = () => {
-    const bgRemovalPrompt = "Perform a clean, professional background removal. Isolate the primary subject with sharp edges and place it on a solid, pure white background. Remove all shadows and distractions from the background.";
+    const bgRemovalPrompt = "Perform a clean, professional background removal. Isolate the primary subject with sharp edges and place it on a solid, pure white background. Ensure the subject's lighting and shadows remain natural but the background is entirely removed and replaced with flat white. Focus on high-precision edge detection around hair and fine details.";
     handleEdit(bgRemovalPrompt, 'bg-removal');
   };
 
   const handleStudioLight = () => {
-    const lightPrompt = "Apply professional studio lighting to this subject. Enhance details with cinematic rim lighting, soft fill light, and a high-end commercial aesthetic. Make the lighting look intentional and premium.";
+    const lightPrompt = "Apply professional cinematic lighting and volumetric fog to this subject. Enhance details with cinematic rim lighting, soft fill light, and a high-end commercial aesthetic. Make the lighting look intentional, atmospheric, and premium with realistic depth-of-field.";
     handleEdit(lightPrompt, 'studio-light');
   };
 
@@ -92,13 +98,50 @@ const ImageEditTool: React.FC = () => {
           <input type="file" hidden ref={fileInputRef} onChange={handleImageUpload} accept="image/*" />
         </div>
 
+        {/* New Primary One-Click Quick Actions Section */}
         <div className="space-y-4">
-          <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Neural Directives</label>
+          <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">AI Quick Actions</label>
+          <button
+            onClick={handleRemoveBackground}
+            disabled={isProcessing || !originalImage}
+            className={`w-full py-5 px-6 rounded-3xl border-2 flex items-center justify-between transition-all group relative overflow-hidden ${
+              activePreset === 'bg-removal'
+                ? 'bg-emerald-600 border-emerald-400 text-white shadow-xl shadow-emerald-900/30'
+                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 hover:border-emerald-500/50 shadow-sm'
+            }`}
+          >
+            <div className="flex items-center space-x-4 relative z-10">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-inner ${activePreset === 'bg-removal' ? 'bg-white/20' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                <i className={`fas fa-user-check ${activePreset === 'bg-removal' ? 'animate-pulse' : ''}`}></i>
+              </div>
+              <div className="text-left">
+                <p className="text-xs font-black uppercase tracking-tight">Remove Background</p>
+                <p className={`text-[8px] font-bold uppercase opacity-60 ${activePreset === 'bg-removal' ? 'text-white' : 'text-neutral-400'}`}>One-Click Subject Isolation</p>
+              </div>
+            </div>
+            <i className={`fas ${activePreset === 'bg-removal' ? 'fa-spinner fa-spin' : 'fa-chevron-right'} text-[10px] opacity-40 relative z-10`}></i>
+            {activePreset === 'bg-removal' && (
+              <div className="absolute inset-0 bg-emerald-500/20 animate-pulse"></div>
+            )}
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">Neural Directives</label>
+            <button 
+              onClick={() => setStudioQuality(!studioQuality)}
+              className={`flex items-center space-x-2 px-3 py-1 rounded-full border transition-all ${studioQuality ? 'bg-pink-600/10 border-pink-500/30 text-pink-600' : 'bg-neutral-100 dark:bg-neutral-800 border-transparent text-neutral-400'}`}
+            >
+              <i className={`fas fa-wand-magic-sparkles text-[8px] ${studioQuality ? 'animate-pulse' : ''}`}></i>
+              <span className="text-[8px] font-black uppercase tracking-widest">Studio Standard</span>
+            </button>
+          </div>
           <div className="relative">
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe the desired transformation... e.g., 'Replace his tie with a bowtie', 'Add snow to the background'"
+              placeholder="Describe the desired transformation... e.g., 'Replace his tie with a bowtie and add cinematic lighting with volumetric fog'"
               className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[1.5rem] p-6 pr-12 h-32 focus:outline-none focus:ring-4 focus:ring-pink-600/10 resize-none text-[13px] text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-300 dark:placeholder:text-neutral-700 shadow-inner transition-all font-medium leading-relaxed"
             />
             <button
@@ -110,36 +153,20 @@ const ImageEditTool: React.FC = () => {
               <i className={`fas ${isProcessing && !activePreset ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'}`}></i>
             </button>
           </div>
+          {studioQuality && (
+            <p className="text-[8px] font-bold text-pink-500/80 uppercase tracking-tighter px-1">
+              <i className="fas fa-info-circle mr-1"></i> Auto-Injecting Cinematic Lighting & Volumetric Fog
+            </p>
+          )}
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center space-x-2 px-1">
-            <label className="block text-[10px] font-black text-neutral-400 dark:text-neutral-600 uppercase tracking-[0.2em]">Neural Presets</label>
+            <label className="block text-[10px] font-black text-neutral-400 dark:text-neutral-600 uppercase tracking-[0.2em]">Visual Presets</label>
             <div className="h-px flex-1 bg-neutral-100 dark:bg-neutral-800"></div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={handleRemoveBackground}
-              disabled={isProcessing || !originalImage}
-              className={`p-4 rounded-2xl border text-left transition-all duration-300 relative overflow-hidden group ${
-                activePreset === 'bg-removal'
-                  ? 'bg-pink-600 border-pink-400 text-white shadow-xl'
-                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-pink-500/50'
-              }`}
-            >
-              <div className="flex flex-col space-y-2 relative z-10">
-                <i className={`fas fa-eraser text-xs ${activePreset === 'bg-removal' ? 'text-white' : 'text-pink-600'}`}></i>
-                <div className="space-y-0.5">
-                  <p className="text-[10px] font-black uppercase tracking-tight">Remove BG</p>
-                  <p className={`text-[8px] font-bold uppercase opacity-50 ${activePreset === 'bg-removal' ? 'text-white' : ''}`}>AI Subject Isolation</p>
-                </div>
-              </div>
-              {activePreset === 'bg-removal' && (
-                <div className="absolute inset-x-0 bottom-0 h-1 bg-white/30 animate-[progress_10s_linear_forwards] w-0"></div>
-              )}
-            </button>
-
+          <div className="grid grid-cols-1 gap-3">
             <button
               onClick={handleStudioLight}
               disabled={isProcessing || !originalImage}
@@ -150,10 +177,10 @@ const ImageEditTool: React.FC = () => {
               }`}
             >
               <div className="flex flex-col space-y-2 relative z-10">
-                <i className={`fas fa-lightbulb text-xs ${activePreset === 'studio-light' ? 'text-white' : 'text-indigo-600'}`}></i>
+                <i className={`fas fa-film text-xs ${activePreset === 'studio-light' ? 'text-white' : 'text-indigo-600'}`}></i>
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-black uppercase tracking-tight">Studio Master</p>
-                  <p className={`text-[8px] font-bold uppercase opacity-50 ${activePreset === 'studio-light' ? 'text-white' : ''}`}>High-End Lighting</p>
+                  <p className="text-[10px] font-black uppercase tracking-tight">Cinema Relighting</p>
+                  <p className={`text-[8px] font-bold uppercase opacity-50 ${activePreset === 'studio-light' ? 'text-white' : ''}`}>Pro Cinematic Lighting & Volumetric Fog</p>
                 </div>
               </div>
               {activePreset === 'studio-light' && (
@@ -181,7 +208,7 @@ const ImageEditTool: React.FC = () => {
            </div>
            {isProcessing && (
              <div className="bg-pink-600/10 text-pink-600 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse border border-pink-600/20">
-               {activePreset === 'bg-removal' ? 'Isolating Subject...' : activePreset === 'studio-light' ? 'Applying Lighting...' : 'Processing Directives...'}
+               {activePreset === 'bg-removal' ? 'Isolating Subject...' : activePreset === 'studio-light' ? 'Rendering Atmosphere...' : 'Processing Directives...'}
              </div>
            )}
         </div>
@@ -190,11 +217,11 @@ const ImageEditTool: React.FC = () => {
           {isProcessing ? (
             <div className="text-center space-y-10 animate-fade-in">
               <div className="relative w-28 h-28 mx-auto">
-                <div className="absolute inset-0 border-[6px] border-pink-600/10 rounded-full"></div>
-                <div className="absolute inset-0 border-[6px] border-pink-600 border-t-transparent rounded-full animate-spin"></div>
-                <div className="absolute inset-4 border-[2px] border-pink-600/20 rounded-full animate-[spin_2s_linear_infinite_reverse]"></div>
+                <div className={`absolute inset-0 border-[6px] rounded-full ${activePreset === 'bg-removal' ? 'border-emerald-600/10' : 'border-pink-600/10'}`}></div>
+                <div className={`absolute inset-0 border-[6px] border-t-transparent rounded-full animate-spin ${activePreset === 'bg-removal' ? 'border-emerald-600' : 'border-pink-600'}`}></div>
+                <div className={`absolute inset-4 border-[2px] rounded-full animate-[spin_2s_linear_infinite_reverse] ${activePreset === 'bg-removal' ? 'border-emerald-600/20' : 'border-pink-600/20'}`}></div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <i className="fas fa-microchip text-pink-600/40 text-2xl"></i>
+                  <i className={`fas ${activePreset === 'bg-removal' ? 'fa-scissors text-emerald-600/40' : 'fa-microchip text-pink-600/40'} text-2xl`}></i>
                 </div>
               </div>
               <div className="space-y-3">

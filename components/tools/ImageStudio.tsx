@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { GeminiService } from '../../services/geminiService';
 import { ImageResult } from '../../types';
+import BroadcastModal from '../BroadcastModal';
 
 const ImageStudio: React.FC = () => {
   const [prompt, setPrompt] = useState('');
@@ -9,6 +10,10 @@ const ImageStudio: React.FC = () => {
   const [imageSize, setImageSize] = useState('1K');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<ImageResult | null>(null);
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isCopied, setIsCopied] = useState<number | null>(null);
+
   const [history, setHistory] = useState<ImageResult[]>(() => {
     const saved = localStorage.getItem('hobbs-image-history');
     return saved ? JSON.parse(saved) : [];
@@ -21,12 +26,17 @@ const ImageStudio: React.FC = () => {
     localStorage.setItem('hobbs-image-history', JSON.stringify(history));
   }, [history]);
 
+  const filteredHistory = useMemo(() => {
+    if (!searchQuery.trim()) return history;
+    return history.filter(item => 
+      item.prompt.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [history, searchQuery]);
+
   const handleGenerate = async () => {
     if (!prompt.trim() || isGenerating) return;
 
     setIsGenerating(true);
-    // Note: Not clearing result immediately so the old one stays while generating if desired, 
-    // but the UI currently shows a loader in its place.
 
     try {
       if (typeof (window as any).aistudio?.hasSelectedApiKey === 'function') {
@@ -63,6 +73,20 @@ const ImageStudio: React.FC = () => {
     link.click();
   };
 
+  const copyPrompt = (text: string, timestamp: number) => {
+    navigator.clipboard.writeText(text);
+    setIsCopied(timestamp);
+    setTimeout(() => setIsCopied(null), 2000);
+  };
+
+  const deleteHistoryItem = (timestamp: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Excise this node from session memory?")) {
+      setHistory(prev => prev.filter(item => item.timestamp !== timestamp));
+      if (result?.timestamp === timestamp) setResult(null);
+    }
+  };
+
   const clearHistory = () => {
     if (confirm("Purge all historical records from this session?")) {
       setHistory([]);
@@ -71,7 +95,16 @@ const ImageStudio: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col lg:flex-row p-8 gap-8 overflow-hidden bg-transparent">
+    <div className="h-full flex flex-col lg:flex-row p-8 gap-8 overflow-hidden bg-transparent theme-transition">
+      {isBroadcasting && result && (
+        <BroadcastModal 
+          mediaUrl={result.url} 
+          type="image" 
+          prompt={result.prompt} 
+          onClose={() => setIsBroadcasting(false)} 
+        />
+      )}
+      
       {/* Controls & History Sidebar */}
       <div className="w-full lg:w-96 flex flex-col space-y-8 flex-shrink-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-8">
@@ -95,7 +128,7 @@ const ImageStudio: React.FC = () => {
                   className={`px-3 py-2.5 rounded-xl text-[10px] font-black border transition-all duration-300 ${
                     aspectRatio === r 
                       ? 'bg-purple-600 border-purple-500 text-white shadow-lg' 
-                      : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-400 hover:border-purple-500/50'
+                      : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-400 hover:border-purple-500/50'
                   }`}
                 >
                   {r}
@@ -114,7 +147,7 @@ const ImageStudio: React.FC = () => {
                   className={`px-3 py-2.5 rounded-xl text-[10px] font-black border transition-all duration-300 ${
                     imageSize === s 
                       ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg' 
-                      : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-400 hover:border-indigo-500/50'
+                      : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-400 hover:border-indigo-500/50'
                   }`}
                 >
                   {s}
@@ -123,38 +156,90 @@ const ImageStudio: React.FC = () => {
             </div>
           </div>
 
-          {/* History Panel Integration */}
-          {history.length > 0 && (
-            <div className="pt-4 border-t border-neutral-100 dark:border-neutral-900/50 space-y-4">
-              <div className="flex justify-between items-center px-1">
+          {/* Enhanced History Panel */}
+          <div className="pt-6 border-t border-neutral-100 dark:border-neutral-900/50 space-y-4 pb-4">
+            <div className="flex justify-between items-center px-1">
+              <div className="space-y-1">
                 <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest">Studio Archives</label>
+                <p className="text-[8px] text-neutral-400 font-bold uppercase">{history.length} Nodes Registered</p>
+              </div>
+              {history.length > 0 && (
                 <button 
                   onClick={clearHistory}
-                  className="text-[8px] font-black text-red-500/50 hover:text-red-500 uppercase tracking-widest transition"
+                  className="text-[8px] font-black text-red-500/60 hover:text-red-500 uppercase tracking-widest transition"
                 >
                   Purge All
                 </button>
-              </div>
-              <div className="grid grid-cols-3 gap-2 pb-4">
-                {history.map((item, idx) => (
-                  <button
-                    key={item.timestamp}
-                    onClick={() => setResult(item)}
-                    className={`aspect-square rounded-xl overflow-hidden border-2 transition-all group relative ${
-                      result?.timestamp === item.timestamp 
-                        ? 'border-purple-500 shadow-md ring-2 ring-purple-500/20' 
-                        : 'border-neutral-100 dark:border-neutral-800 hover:border-purple-500/50'
-                    }`}
-                  >
-                    <img src={item.url} className="w-full h-full object-cover" alt={`History ${idx}`} />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <i className="fas fa-eye text-white text-[10px]"></i>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              )}
             </div>
-          )}
+
+            {history.length > 0 && (
+              <div className="px-1">
+                <div className="relative">
+                  <input 
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search session clusters..."
+                    className="w-full bg-neutral-100 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-xl px-8 py-2 text-[10px] font-bold text-neutral-700 dark:text-neutral-300 focus:outline-none focus:ring-1 focus:ring-purple-500/30"
+                  />
+                  <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-[9px] text-neutral-400"></i>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-3 gap-2 px-1">
+              {filteredHistory.map((item) => (
+                <div
+                  key={item.timestamp}
+                  onClick={() => setResult(item)}
+                  className={`group aspect-square rounded-xl overflow-hidden border-2 transition-all relative cursor-pointer ${
+                    result?.timestamp === item.timestamp 
+                      ? 'border-purple-500 shadow-lg ring-2 ring-purple-500/20 z-10' 
+                      : 'border-neutral-100 dark:border-neutral-800 hover:border-purple-500/40'
+                  }`}
+                  title={item.prompt}
+                >
+                  <img src={item.url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="History Node" />
+                  
+                  {/* Hover Quick Actions */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-2">
+                    <div className="flex space-x-1.5">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); downloadImage(item.url, `archive-${item.timestamp}.png`); }}
+                        className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors"
+                        title="Quick Download"
+                      >
+                        <i className="fas fa-download text-[10px]"></i>
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); copyPrompt(item.prompt, item.timestamp); }}
+                        className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors"
+                        title="Copy Prompt"
+                      >
+                        <i className={`fas ${isCopied === item.timestamp ? 'fa-check text-green-400' : 'fa-copy'} text-[10px]`}></i>
+                      </button>
+                    </div>
+                    <button 
+                      onClick={(e) => deleteHistoryItem(item.timestamp, e)}
+                      className="text-[8px] font-black text-red-400 hover:text-red-300 uppercase tracking-tighter transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+
+                  {/* Indicator for currently viewed */}
+                  {result?.timestamp === item.timestamp && (
+                    <div className="absolute top-1 right-1 w-2 h-2 bg-purple-500 rounded-full shadow-sm animate-pulse"></div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {history.length > 0 && filteredHistory.length === 0 && (
+              <p className="text-[9px] text-neutral-500 text-center italic py-4">No nodes match your filter directive.</p>
+            )}
+          </div>
         </div>
 
         <button
@@ -195,6 +280,13 @@ const ImageStudio: React.FC = () => {
             
             <div className="absolute bottom-6 right-6 flex space-x-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
               <button 
+                onClick={() => setIsBroadcasting(true)}
+                className="p-4 bg-emerald-600 backdrop-blur-md rounded-2xl text-white border border-white/20 hover:scale-110 active:scale-95 transition shadow-2xl"
+                title="Broadcast to Network"
+              >
+                <i className="fas fa-tower-broadcast"></i>
+              </button>
+              <button 
                 onClick={() => downloadImage(result.url, `hobbs-gen-${result.timestamp}.png`)}
                 className="p-4 bg-white/80 dark:bg-black/60 backdrop-blur-md rounded-2xl text-neutral-900 dark:text-white border border-white/20 hover:scale-110 active:scale-95 transition shadow-2xl"
                 title="Download Masterpiece"
@@ -207,9 +299,6 @@ const ImageStudio: React.FC = () => {
               <div className="bg-white/80 dark:bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest shadow-sm">
                 Render Success
               </div>
-              <div className="bg-white/80 dark:bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 text-[9px] font-bold text-neutral-500 dark:text-neutral-400 max-w-xs shadow-sm line-clamp-2">
-                "{result.prompt}"
-              </div>
             </div>
 
             <div className="absolute top-6 right-6">
@@ -220,6 +309,11 @@ const ImageStudio: React.FC = () => {
               >
                 <i className="fas fa-times"></i>
               </button>
+            </div>
+            
+            {/* Context Tooltip for large view */}
+            <div className="absolute top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 backdrop-blur-md border border-white/10 px-6 py-2 rounded-2xl max-w-lg">
+               <p className="text-[10px] text-neutral-300 font-medium italic line-clamp-1">"{result.prompt}"</p>
             </div>
           </div>
         ) : (
@@ -234,6 +328,12 @@ const ImageStudio: React.FC = () => {
           </div>
         )}
       </div>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #222; }
+      `}</style>
     </div>
   );
 };

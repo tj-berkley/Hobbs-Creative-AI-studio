@@ -1,22 +1,29 @@
 
 import React from 'react';
-import { StudioToolType } from '../types';
+import { StudioToolType, PlatformConfig } from '../types';
 import { TOOLS } from '../constants';
 
 interface ToolContainerProps {
   toolId: StudioToolType;
   children: React.ReactNode;
+  platformConfig: PlatformConfig;
 }
 
-const ToolContainer: React.FC<ToolContainerProps> = ({ toolId, children }) => {
+const ToolContainer: React.FC<ToolContainerProps> = ({ toolId, children, platformConfig }) => {
   const tool = TOOLS.find(t => t.id === toolId)!;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-neutral-50 dark:bg-black theme-transition">
       <header className="px-8 py-6 border-b border-neutral-200 dark:border-neutral-900 bg-white dark:bg-[#080808] flex items-center justify-between theme-transition sticky top-0 z-30">
         <div className="flex items-center space-x-4">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-emerald-500/20 shadow-md shrink-0 bg-neutral-950">
-             <i className="fas fa-chess-knight text-emerald-400 text-lg"></i>
+          <div 
+            className="w-10 h-10 rounded-xl flex items-center justify-center border-2 shadow-md shrink-0 bg-neutral-950"
+            style={{ borderColor: `${platformConfig.brandColor}33` }}
+          >
+             <i 
+              className={`fas ${platformConfig.logoIcon} text-lg`}
+              style={{ color: platformConfig.brandColor }}
+             ></i>
           </div>
           <div>
             <h2 className="text-2xl font-black text-neutral-900 dark:text-white flex items-center space-x-3 tracking-tighter">
@@ -26,8 +33,8 @@ const ToolContainer: React.FC<ToolContainerProps> = ({ toolId, children }) => {
           </div>
         </div>
         <div className="flex space-x-2">
-          <button className="px-5 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400 hover:border-emerald-500/40 transition shadow-sm">
-            <i className="fas fa-bolt-lightning mr-2 text-emerald-500"></i> Active Logs
+          <button className="px-5 py-2.5 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-600 dark:text-neutral-400 hover:border-[var(--brand-primary)]/40 transition shadow-sm">
+            <i className="fas fa-bolt-lightning mr-2 text-[var(--brand-primary)]"></i> Active Logs
           </button>
         </div>
       </header>

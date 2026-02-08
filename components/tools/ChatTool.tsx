@@ -52,7 +52,7 @@ const ChatTool: React.FC = () => {
       console.error(error);
       const errorMsg: ChatMessage = {
         role: 'model',
-        text: "Error: Failed to reach the Sam AI core. Ensure your Klub access is authorized.",
+        text: "Error: Failed to reach the Hobbs AI core. Ensure your platform bridge is authorized.",
         id: (Date.now() + 1).toString(),
         timestamp: Date.now()
       };
@@ -71,15 +71,15 @@ const ChatTool: React.FC = () => {
               <i className="fas fa-chess-knight text-emerald-400 text-6xl"></i>
             </div>
             <div className="text-center space-y-3">
-              <p className="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter italic">Sam Strategic Intelligence</p>
-              <p className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-600/60 italic">Klub Infrastructure Online</p>
+              <p className="text-2xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter italic">Hobbs Strategic Intelligence</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.3em] text-emerald-600/60 italic">Studio Infrastructure Online</p>
             </div>
             <div className="grid grid-cols-2 gap-4 w-full max-w-lg mt-4">
-              <button onClick={() => setInput("Draft a project roadmap for Sam Klub.")} className="p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl text-[10px] font-black uppercase tracking-widest text-left hover:border-emerald-500 transition-all shadow-sm group">
+              <button onClick={() => setInput("Draft a studio expansion strategy for Hobbs Studio.")} className="p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl text-[10px] font-black uppercase tracking-widest text-left hover:border-emerald-500 transition-all shadow-sm group">
                 <i className="fas fa-chess-board text-emerald-500 mb-3 block text-xl group-hover:scale-110 transition-transform"></i>
-                Roadmap Directive
+                Strategic Roadmap
               </button>
-              <button onClick={() => setInput("Analyze the visual trends in high-end studio branding.")} className="p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl text-[10px] font-black uppercase tracking-widest text-left hover:border-emerald-500 transition-all shadow-sm group">
+              <button onClick={() => setInput("Analyze current trends in creative platform integration.")} className="p-6 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl text-[10px] font-black uppercase tracking-widest text-left hover:border-emerald-500 transition-all shadow-sm group">
                 <i className="fas fa-magnifying-glass-chart text-emerald-500 mb-3 block text-xl group-hover:scale-110 transition-transform"></i>
                 Market Intelligence
               </button>
@@ -178,7 +178,7 @@ const ChatTool: React.FC = () => {
                 handleSend();
               }
             }}
-            placeholder="Engage Sam AI with a directive..."
+            placeholder="Engage Hobbs AI with a directive..."
             className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[2rem] p-8 pr-24 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 resize-none h-36 text-neutral-900 dark:text-neutral-200 transition-all duration-300 shadow-inner font-medium text-[14px] placeholder:text-neutral-300 dark:placeholder:text-neutral-700"
           />
           <button

@@ -1,6 +1,6 @@
 {
-  "name": "Sam Klub Studio",
-  "description": "The premier creative infrastructure powered by Sam AI. Elite-tier image and video generation, real-time voice synthesis, and high-fidelity content analysis for visionaries.",
+  "name": "Hobbs Studio",
+  "description": "The premier creative infrastructure powered by Hobbs AI. Elite-tier image and video generation, real-time voice synthesis, and high-fidelity content analysis for visionaries.",
   "requestFramePermissions": [
     "camera",
     "microphone"

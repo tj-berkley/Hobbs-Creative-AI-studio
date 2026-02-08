@@ -1,6 +1,7 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { MODELS } from "../constants";
+import { StoryGenre } from "../types";
 
 export interface TranscriptionConfig {
   language: string;
@@ -22,7 +23,7 @@ export class GeminiService {
   static async chat(message: string, options: { useThinking?: boolean; useSearch?: boolean; useMaps?: boolean } = {}) {
     const ai = this.getAI();
     const config: any = {
-      systemInstruction: "You are Sam, the Strategic Knight and mastermind behind Sam Klub Studio. You are highly intelligent, decisive, and speak with a focus on creative strategy and high-level execution. You are the user's lead consultant in the Klub. You provide sharp, efficient, and elite-tier guidance without unnecessary chatter. Think of yourself as a grandmaster of creative technology."
+      systemInstruction: "You are Hobbs, the lead Strategic Consultant and creative mastermind behind Hobbs Studio. You are highly intelligent, decisive, and speak with a focus on creative strategy, elite execution, and high-performance design. You provide sharp, efficient, and professional guidance. You are the user's primary intelligence partner."
     };
     
     if (options.useThinking) {
@@ -44,11 +45,121 @@ export class GeminiService {
 
     const model = options.useMaps ? MODELS.MAPS_GROUNDING : (options.useSearch ? MODELS.CHAT_FLASH : MODELS.CHAT_PRO);
 
-    return await ai.models.generateContent({
+    const response = await ai.models.generateContent({
       model,
       contents: message,
       config
     });
+    return response;
+  }
+
+  static async generateStory(genre: StoryGenre, premise: string) {
+    const ai = this.getAI();
+    const prompt = `Write a compelling and highly detailed ${genre} story based on this premise: "${premise}". 
+    The story should be structured as a professional literary work suitable for publication and sale.
+    Focus on creating a unique "world-feel" for the genre. Ensure rich descriptions and immersive world-building.`;
+
+    const response = await ai.models.generateContent({
+      model: MODELS.CHAT_PRO,
+      contents: prompt
+    });
+    return response.text;
+  }
+
+  static async convertStoryToScript(story: string, genre: StoryGenre) {
+    const ai = this.getAI();
+    const prompt = `Convert the following ${genre} story into a professional, scene-by-scene movie script for a high-end cinematic production. 
+    Break the story down into exactly 5-8 distinct scenes. 
+    For each scene, provide:
+    1. Setting (EXT/INT location)
+    2. A detailed Visual Directive (for an AI video generator like Veo)
+    3. The Action Prompt (what happens in the scene)
+    4. Key Dialogue
+    5. Estimated duration in seconds (between 5 and 10).
+    6. Director Suggestions: Professional ideas for camera angles, lighting shifts, or specific visual effects to improve scene impact.
+    7. Engagement Triggers: Strategic narrative or visual hooks to maximize watcher retention.
+    
+    Story: ${story}
+    
+    Return the result as a JSON array of objects.`;
+
+    const response = await ai.models.generateContent({
+      model: MODELS.CHAT_PRO,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              setting: { type: Type.STRING },
+              visualDirective: { type: Type.STRING },
+              actionPrompt: { type: Type.STRING },
+              dialogue: { type: Type.STRING },
+              estimatedDuration: { type: Type.NUMBER },
+              directorSuggestions: { type: Type.STRING },
+              engagementTriggers: { type: Type.STRING }
+            },
+            required: ["setting", "visualDirective", "actionPrompt", "dialogue", "estimatedDuration", "directorSuggestions", "engagementTriggers"]
+          }
+        }
+      }
+    });
+    return JSON.parse(response.text || "[]");
+  }
+
+  static async analyzeCharacter(base64Video: string, mimeType: string) {
+    const ai = this.getAI();
+    const response = await ai.models.generateContent({
+      model: MODELS.CHAT_PRO,
+      contents: {
+        parts: [
+          { inlineData: { data: base64Video, mimeType } },
+          { text: "Analyze the person in this video with ultra-high precision. Extract their 'Personality Fingerprint'. Detail their voice timbre (warmth, frequency, pitch), their emotional baseline, recurring actions/gestures, and unique vocal quirks. Return the result in a JSON-like structure with fields: voiceTimbre, emotionalBaseline, commonActions (array), vocalQuirks (array), summary." }
+        ]
+      },
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            voiceTimbre: { type: Type.STRING },
+            emotionalBaseline: { type: Type.STRING },
+            commonActions: { type: Type.ARRAY, items: { type: Type.STRING } },
+            vocalQuirks: { type: Type.ARRAY, items: { type: Type.STRING } },
+            summary: { type: Type.STRING }
+          }
+        }
+      }
+    });
+    return JSON.parse(response.text);
+  }
+
+  static async generateMovieScript(characters: any[]) {
+    const ai = this.getAI();
+    const prompt = `Act as an elite Hollywood Scriptwriter. Based on the following character fingerprints extracted from video clips, write a short, compelling dialogue script for a scene involving these characters. 
+    Characters: ${JSON.stringify(characters)}
+    Return a JSON array where each object has "index" (clip index) and "dialogue" (the line of text they should speak).`;
+
+    const response = await ai.models.generateContent({
+      model: MODELS.CHAT_PRO,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              index: { type: Type.NUMBER },
+              dialogue: { type: Type.STRING }
+            }
+          }
+        }
+      }
+    });
+    return JSON.parse(response.text);
   }
 
   static async generateImage(prompt: string, config: { aspectRatio: string, imageSize: string }) {
@@ -92,7 +203,7 @@ export class GeminiService {
     throw new Error("Image edit failed");
   }
 
-  static async generateVideo(prompt: string, aspectRatio: '16:9' | '9:16', base64Image?: string) {
+  static async generateVideo(prompt: string, aspectRatio: '16:9' | '9:16', base64Image?: string, resolution: '720p' | '1080p' = '720p') {
     const ai = this.getAI();
     
     const params: any = {
@@ -100,7 +211,7 @@ export class GeminiService {
       prompt,
       config: {
         numberOfVideos: 1,
-        resolution: '720p',
+        resolution: resolution,
         aspectRatio
       }
     };
@@ -142,7 +253,7 @@ export class GeminiService {
     const ai = this.getAI();
     
     const instructions = `
-      Task: Perform ultra-high-fidelity audio transcription with expert-level linguistic accuracy for Sam Klub Studio.
+      Task: Perform ultra-high-fidelity audio transcription with expert-level linguistic accuracy for Hobbs Studio.
       
       Linguistic Engine Calibration:
       - Primary Language: ${config.language}
@@ -181,23 +292,29 @@ export class GeminiService {
     reverb?: number,
     echo?: number,
     delay?: number,
+    emotionIntensity?: number,
     referenceAudio?: { data: string, mimeType: string } 
   }) {
     const ai = this.getAI();
     const parts: any[] = [];
+
+    const intensity = options.emotionIntensity || 100;
+    const emotionDesc = options.emotion && options.emotion !== 'Neutral' 
+      ? `Deliver the performance with an extremely ${options.emotion} emotional state (Intensity: ${intensity}%). Adjust vocal inflections, breathiness, and pitch variance to embody this sentiment fully.` 
+      : '';
 
     const reverbDesc = options.reverb && options.reverb > 10 ? `Apply a ${options.reverb}% intensity wet reverb, sounding like a ${options.reverb > 70 ? 'vast hall' : options.reverb > 40 ? 'large room' : 'small chamber'}.` : '';
     const echoDesc = options.echo && options.echo > 10 ? `Add a distinct slapback echo with ${options.echo}% intensity.` : '';
     const delayDesc = options.delay && options.delay > 10 ? `Apply a feedback delay effect at ${options.delay}% intensity.` : '';
 
     const styleDirectives = [
-      options.emotion ? `Speak with a very prominent ${options.emotion} emotion.` : '',
-      options.timbre ? `Apply a ${options.timbre} vocal timbre characteristic.` : '',
+      emotionDesc,
+      options.timbre ? `Acoustic Directive: Apply a ${options.timbre} vocal timbre characteristic to the output.` : '',
       reverbDesc,
       echoDesc,
       delayDesc,
-      options.speakingRate ? `Speak at a ${options.speakingRate > 1.2 ? 'fast' : options.speakingRate < 0.8 ? 'slow' : 'normal'} pace.` : '',
-      options.pitch ? `Speak with a ${options.pitch > 1.2 ? 'high-pitched' : options.pitch < 0.8 ? 'deep, low-pitched' : 'natural'} voice.` : ''
+      options.speakingRate ? `Tempo: Speak at a ${options.speakingRate > 1.2 ? 'fast' : options.speakingRate < 0.8 ? 'slow' : 'normal'} pace.` : '',
+      options.pitch ? `Pitch Mapping: Speak with a ${options.pitch > 1.2 ? 'high-pitched' : options.pitch < 0.8 ? 'deep, low-pitched' : 'natural'} voice.` : ''
     ].filter(Boolean).join(' ');
 
     if (options.referenceAudio) {
@@ -208,11 +325,11 @@ export class GeminiService {
         }
       });
       parts.push({
-        text: `Analyze the speaker's voice in the provided audio sample. Then, speak the following text in that EXACT same voice, tone, and inflection: "${text}". Critical Audio Modulation: ${styleDirectives}`
+        text: `Zero-Shot Voice Cloning Directive: Analyze the speaker's voice in the provided reference audio. Synthesize the following text using THAT EXACT voice: "${text}". Apply these stylistic overrides for a professional cinematic performance: ${styleDirectives}. Ensure the character's essence is preserved while adopting the requested emotional texture.`
       });
     } else {
       parts.push({ 
-        text: `${styleDirectives} Speak the following text: "${text}"`
+        text: `Style Directive: ${styleDirectives} Synthesize text with high-fidelity: "${text}"`
       });
     }
 
