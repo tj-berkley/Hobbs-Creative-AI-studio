@@ -1,25 +1,25 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Sidebar from './components/Sidebar';
-import ToolContainer from './components/ToolContainer';
-import ChatTool from './components/tools/ChatTool';
-import ImageStudio from './components/tools/ImageStudio';
-import ImageEditTool from './components/tools/ImageEditTool';
-import VideoStudio from './components/tools/VideoStudio';
-import VideoEditTool from './components/tools/VideoEditTool';
-import VoiceStudio from './components/tools/VoiceStudio';
-import ContentAnalysisTool from './components/tools/ContentAnalysisTool';
-import DeveloperPortal from './components/tools/DeveloperPortal';
-import TranscriptionTool from './components/tools/TranscriptionTool';
-import SocialHub from './components/tools/SocialHub';
-import MovieStudio from './components/tools/MovieStudio';
-import MemoryNode from './components/tools/MemoryNode';
-import KnowledgeBank from './components/tools/KnowledgeBank';
-import StoryEngine from './components/tools/StoryEngine';
-import LandingPage from './components/LandingPage';
-import AuthPortal from './components/AuthPortal';
-import { StudioToolType, UserCredits, SocialPostPrefill, MovieClip, PlatformConfig, ScriptProject } from './types';
-import { TOOLS } from './constants';
+import Sidebar from './components/Sidebar.tsx';
+import ToolContainer from './components/ToolContainer.tsx';
+import ChatTool from './components/tools/ChatTool.tsx';
+import ImageStudio from './components/tools/ImageStudio.tsx';
+import ImageEditTool from './components/tools/ImageEditTool.tsx';
+import VideoStudio from './components/tools/VideoStudio.tsx';
+import VideoEditTool from './components/tools/VideoEditTool.tsx';
+import VoiceStudio from './components/tools/VoiceStudio.tsx';
+import ContentAnalysisTool from './components/tools/ContentAnalysisTool.tsx';
+import DeveloperPortal from './components/tools/DeveloperPortal.tsx';
+import TranscriptionTool from './components/tools/TranscriptionTool.tsx';
+import SocialHub from './components/tools/SocialHub.tsx';
+import MovieStudio from './components/tools/MovieStudio.tsx';
+import MemoryNode from './components/tools/MemoryNode.tsx';
+import KnowledgeBank from './components/tools/KnowledgeBank.tsx';
+import StoryEngine from './components/tools/StoryEngine.tsx';
+import LandingPage from './components/LandingPage.tsx';
+import AuthPortal from './components/AuthPortal.tsx';
+import { StudioToolType, UserCredits, SocialPostPrefill, MovieClip, PlatformConfig, ScriptProject } from './types.ts';
+import { TOOLS } from './constants.tsx';
 
 const DEFAULT_CONFIG: PlatformConfig = {
   name: 'Hobbs Studio',
@@ -253,6 +253,7 @@ const App: React.FC = () => {
         .text-brand { color: var(--brand-primary); }
         .bg-brand { background-color: var(--brand-primary); }
         .border-brand { border-color: var(--brand-primary); }
+        .theme-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
       `}</style>
     </div>
   );

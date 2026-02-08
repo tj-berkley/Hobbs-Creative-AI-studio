@@ -1,5 +1,5 @@
 
-import { StudioToolType, ToolDefinition } from './types';
+import { StudioToolType, ToolDefinition } from './types.ts';
 
 export const TOOLS: ToolDefinition[] = [
   {
@@ -124,16 +124,16 @@ export const MODELS = {
 
 export const REVENUE_LOGIC = {
   PLATFORM_PROFIT_TARGET: 0.80,
-  'Nano': {
-    platformFee: 0.50,
+  'Beginner': {
+    platformFee: 0.40, // 40% cut as requested
     costEfficiency: 0.20
   },
   'Studio Pro': {
-    platformFee: 0.40,
-    costEfficiency: 0.20 // 20% of fee goes to compute, 80% profit
+    platformFee: 0.25, // 25% split as requested
+    costEfficiency: 0.20 
   },
   'Enterprise': {
-    platformFee: 0.20,
-    costEfficiency: 0.20
+    platformFee: 0.06,
+    costEfficiency: 0.04
   }
 };

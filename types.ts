@@ -36,8 +36,8 @@ export interface ScriptScene {
   visualDirective: string;
   dialogue: string;
   estimatedDuration: number;
-  directorSuggestions: string; // New: Ideas for the director to improve the scene
-  engagementTriggers: string; // New: Strategies to keep watchers hooked
+  directorSuggestions: string;
+  engagementTriggers: string;
   generatedVideoUrl?: string;
   isGenerating?: boolean;
 }
@@ -49,6 +49,8 @@ export interface ScriptProject {
   premise: string;
   fullStory: string;
   scenes: ScriptScene[];
+  podcastUrl?: string;
+  isPodcastEnabled?: boolean;
 }
 
 export interface PlatformConfig {
@@ -101,7 +103,7 @@ export interface MovieReview {
   username: string;
   rating: number;
   comment: string;
-  watchTime: number; // in seconds
+  watchTime: number;
   completed: boolean;
 }
 
@@ -111,7 +113,7 @@ export interface MovieAnalytics {
   avgWatchTime: number;
   completionRate: number;
   avgRating: number;
-  dropOffPoint: number; // second where most users leave
+  dropOffPoint: number;
   reviews: MovieReview[];
 }
 
@@ -128,11 +130,13 @@ export interface MovieClip {
   isTicketed?: boolean;
   ticketPrice?: number;
   analytics?: MovieAnalytics;
+  podcastUrl?: string;
+  filterId?: string;
 }
 
 export interface UserCredits {
   balance: number;
-  tier: 'Nano' | 'Studio Pro' | 'Enterprise';
+  tier: 'Beginner' | 'Studio Pro' | 'Enterprise';
 }
 
 export interface BoxOfficeStats {
@@ -153,12 +157,14 @@ export interface ScheduledPost {
   videoTrim?: { start: number, end: number };
   isTicketed?: boolean;
   ticketPrice?: number;
+  hasPodcast?: boolean;
 }
 
 export interface SocialPostPrefill {
   mediaUrl: string;
   title: string;
   type: 'video' | 'image';
+  podcastUrl?: string;
 }
 
 export interface KnowledgeEntry {

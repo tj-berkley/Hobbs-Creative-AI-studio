@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { PlatformConfig, StudioToolType } from '../../types';
-import { TOOLS } from '../../constants';
+import { PlatformConfig, StudioToolType } from '../../types.ts';
+import { TOOLS } from '../../constants.tsx';
 
 interface DeveloperPortalProps {
   config: PlatformConfig;
@@ -17,7 +17,7 @@ interface APIKey {
 }
 
 const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ config, onConfigChange }) => {
-  const [activeTab, setActiveTab] = useState<'infrastructure' | 'whitelabeling' | 'monetization' | 'embed'>('infrastructure');
+  const [activeTab, setActiveTab] = useState<'infrastructure' | 'whitelabeling' | 'monetization' | 'subdomain'>('infrastructure');
   const [isCopied, setIsCopied] = useState<string | null>(null);
   const [isStripeConnected, setIsStripeConnected] = useState(false);
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
@@ -133,6 +133,8 @@ const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ config, onConfigChang
   allow="camera; microphone; display-capture; clipboard-read; clipboard-write"
 ></iframe>`;
 
+  const dnsCname = `Type: CNAME | Host: ${config.subdomain} | Value: deploy.hobbs.studio`;
+
   return (
     <div className="max-w-6xl mx-auto p-8 lg:p-12 space-y-12 bg-transparent theme-transition">
       <header className="space-y-6">
@@ -148,13 +150,13 @@ const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ config, onConfigChang
           </div>
           
           <div className="flex bg-neutral-100 dark:bg-neutral-900 p-1 rounded-2xl border border-neutral-200 dark:border-neutral-800 overflow-x-auto custom-scrollbar">
-            {['infrastructure', 'whitelabeling', 'monetization', 'embed'].map(tab => (
+            {['infrastructure', 'whitelabeling', 'monetization', 'subdomain'].map(tab => (
               <button 
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
                 className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm' : 'text-neutral-400 hover:text-neutral-600'}`}
               >
-                {tab}
+                {tab === 'subdomain' ? 'Subdomain Mapping' : tab}
               </button>
             ))}
           </div>
@@ -342,7 +344,7 @@ const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ config, onConfigChang
                           <button
                             key={tool.id}
                             onClick={() => toggleTool(tool.id)}
-                            className={`p-4 rounded-2xl border text-left flex items-center space-x-3 transition-all ${config.enabledTools.includes(tool.id) ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-800 dark:border-white text-white dark:text-black shadow-lg' : 'bg-neutral-50 dark:bg-black border-neutral-200 dark:border-neutral-800 text-neutral-400 opacity-60'}`}
+                            className={`p-4 rounded-2xl border text-left flex items-center space-x-3 transition-all ${config.enabledTools.includes(tool.id) ? 'bg-neutral-900 dark:bg-neutral-100 border-neutral-800 dark:border-white text-white dark:text-black shadow-lg' : 'bg-neutral-50 dark:bg-black border border-neutral-200 dark:border-neutral-800 text-neutral-400 opacity-60'}`}
                           >
                              <i className={`fas ${tool.icon} text-xs`}></i>
                              <span className="text-[9px] font-black uppercase tracking-tight">{tool.name}</span>
@@ -464,44 +466,86 @@ const DeveloperPortal: React.FC<DeveloperPortalProps> = ({ config, onConfigChang
           </div>
         </div>
       ) : (
-        <div className="bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-10 space-y-10 shadow-sm dark:shadow-2xl animate-fade-in">
-          <header className="space-y-4">
-            <h4 className="font-black text-neutral-900 dark:text-white uppercase tracking-tight text-lg italic">Platform Embed Engine</h4>
-            <p className="text-[11px] text-neutral-500 font-medium italic">Use the code snippet below to integrate the whitelabeled {config.name} experience directly into your own platform dashboard.</p>
-          </header>
-
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest px-1">Studio IFrame Snippet</label>
-              <div className="relative group">
-                <pre className="bg-neutral-950 dark:bg-black p-8 rounded-[2rem] border border-neutral-200 dark:border-neutral-800 overflow-x-auto custom-scrollbar">
-                  <code className="font-mono text-[11px] leading-relaxed" style={{ color: config.brandColor }}>
-                    {embedCode}
-                  </code>
-                </pre>
-                <button 
-                  onClick={() => handleCopy(embedCode, 'embed-snippet')} 
-                  className="absolute top-6 right-6 w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-xl flex items-center justify-center backdrop-blur-md transition-all border border-white/5 shadow-lg active:scale-95"
-                  title="Copy Embed Code"
-                >
-                  <i className={`fas ${isCopied === 'embed-snippet' ? 'fa-check' : 'fa-copy'}`} style={{ color: config.brandColor }}></i>
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { title: 'Auth Bridge', desc: 'Sync user session between platforms via JWT.' },
-                { title: 'Cross-Origin', desc: 'Pre-configured CORS for your platform domains.' },
-                { title: 'Platform Events', desc: 'Listen to studio renders via window.postMessage.' }
-              ].map(feat => (
-                <div key={feat.title} className="p-6 bg-neutral-50 dark:bg-black/20 border border-neutral-200 dark:border-neutral-800 rounded-[2rem] space-y-3 hover:border-[var(--brand-primary)]/20 transition-all cursor-default shadow-inner">
-                  <h5 className="text-[10px] font-black uppercase text-neutral-800 dark:text-white tracking-widest">{feat.title}</h5>
-                  <p className="text-[9px] text-neutral-500 font-bold uppercase leading-relaxed tracking-tighter">{feat.desc}</p>
+        <div className="animate-fade-in space-y-8">
+           <div className="bg-white dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 rounded-[2.5rem] p-10 space-y-10 shadow-sm dark:shadow-2xl">
+              <header className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-black text-neutral-900 dark:text-white uppercase tracking-tight text-lg italic">Domain & Connection Hub</h4>
+                  <div className="px-4 py-1.5 bg-emerald-600/10 border border-emerald-600/20 rounded-full text-[9px] font-black text-emerald-600 uppercase tracking-widest">
+                    Enterprise level Active: 6% split node
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
+                <p className="text-[11px] text-neutral-500 font-medium italic">Configure how your platform interacts with this Hobbs Studio instance. Enterprise Level enables full IFrame embedding and direct API bridge sync.</p>
+              </header>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                 <div className="space-y-6">
+                    <div className="space-y-3">
+                       <label className="text-[10px] font-black text-emerald-500 uppercase tracking-widest px-1">Step 1: DNS Record (Subdomain)</label>
+                       <div className="relative group">
+                          <pre className="bg-black p-6 rounded-2xl border border-neutral-800 shadow-inner overflow-x-auto">
+                             <code className="font-mono text-[10px] text-emerald-400">
+                                {dnsCname}
+                             </code>
+                          </pre>
+                          <button 
+                            onClick={() => handleCopy(dnsCname, 'dns-cname')}
+                            className="absolute top-4 right-4 text-neutral-500 hover:text-white"
+                          >
+                             <i className={`fas ${isCopied === 'dns-cname' ? 'fa-check text-green-500' : 'fa-copy'}`}></i>
+                          </button>
+                       </div>
+                       <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-widest px-1 italic">Note: Point your subdomain to this studio to enable the 6% revenue node.</p>
+                    </div>
+
+                    <div className="space-y-3">
+                       <label className="text-[10px] font-black text-emerald-500 uppercase tracking-widest px-1">Step 2: Platform IFrame Embed (Enterprise Exclusive)</label>
+                       <div className="relative group">
+                          <pre className="bg-black p-6 rounded-2xl border border-neutral-800 shadow-inner overflow-x-auto">
+                             <code className="font-mono text-[10px] text-indigo-400">
+                                {embedCode}
+                             </code>
+                          </pre>
+                          <button 
+                            onClick={() => handleCopy(embedCode, 'embed-code')}
+                            className="absolute top-4 right-4 text-neutral-500 hover:text-white"
+                          >
+                             <i className={`fas ${isCopied === 'embed-code' ? 'fa-check text-green-500' : 'fa-copy'}`}></i>
+                          </button>
+                       </div>
+                       <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-widest px-1 italic">Use this to host your movie premiere and box office directly on your platform.</p>
+                    </div>
+                 </div>
+
+                 <div className="bg-neutral-50 dark:bg-black/40 rounded-[2rem] p-8 border border-neutral-200 dark:border-neutral-800 space-y-6">
+                    <h5 className="text-[10px] font-black uppercase text-neutral-400 tracking-widest">Enterprise Handshake (Co-Director Sync)</h5>
+                    <p className="text-[11px] text-neutral-500 leading-relaxed font-medium">This script enables Hobbs AI to act as your Co-Director, pushing production status and ticket sale triggers directly to your platform's backend.</p>
+                    <div className="relative group">
+                       <pre className="bg-black p-6 rounded-2xl border border-neutral-800 shadow-inner overflow-x-auto">
+                          <code className="font-mono text-[9px] text-neutral-400">
+{`window.addEventListener('message', (event) => {
+  if (event.origin !== 'https://${config.subdomain}.hobbs.studio') return;
+  const { type, data } = event.data;
+  
+  if (type === 'PREMIERE_TICKET_SOLD') {
+    // 94% user payout triggered
+    console.log('Box Office Revenue Sync:', data.amount);
+  }
+  
+  if (type === 'DIRECTOR_NODE_UPDATE') {
+    // Hobbs AI production update
+    updatePlatformUI(data.sceneStatus);
+  }
+});`}
+                          </code>
+                       </pre>
+                       <button className="absolute top-4 right-4 text-neutral-500 hover:text-white">
+                          <i className="fas fa-copy"></i>
+                       </button>
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
       )}
       <style>{`

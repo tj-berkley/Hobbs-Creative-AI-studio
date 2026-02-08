@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { MODELS } from "../constants";
-import { StoryGenre } from "../types";
+import { MODELS } from "../constants.tsx";
+import { StoryGenre } from "../types.ts";
 
 export interface TranscriptionConfig {
   language: string;
@@ -109,6 +109,21 @@ export class GeminiService {
     return JSON.parse(response.text || "[]");
   }
 
+  static async generatePodcastNarrative(title: string, fullStory: string) {
+    const ai = this.getAI();
+    const prompt = `Write a high-energy, professional "Behind the Scenes" podcast script for the movie "${title}". 
+    The narrator is a charismatic movie producer in the Hobbs Studio ecosystem. 
+    Summarize the key plot beats of this story: "${fullStory}".
+    Discuss the cinematic choices, character motivations, and why audiences should buy tickets to the premiere. 
+    Length: approximately 300 words. Speak directly to the listener.`;
+
+    const response = await ai.models.generateContent({
+      model: MODELS.CHAT_FLASH,
+      contents: prompt
+    });
+    return response.text;
+  }
+
   static async analyzeCharacter(base64Video: string, mimeType: string) {
     const ai = this.getAI();
     const response = await ai.models.generateContent({
@@ -127,7 +142,7 @@ export class GeminiService {
             voiceTimbre: { type: Type.STRING },
             emotionalBaseline: { type: Type.STRING },
             commonActions: { type: Type.ARRAY, items: { type: Type.STRING } },
-            vocalQuirks: { type: Type.ARRAY, items: { type: Type.STRING } },
+            vocalsQuirks: { type: Type.ARRAY, items: { type: Type.STRING } },
             summary: { type: Type.STRING }
           }
         }
@@ -203,6 +218,31 @@ export class GeminiService {
     throw new Error("Image edit failed");
   }
 
+  static async upscaleImage(base64Image: string, size: '2K' | '4K', originalPrompt: string) {
+    const ai = this.getAI();
+    const response = await ai.models.generateContent({
+      model: MODELS.IMAGE_PRO,
+      contents: {
+        parts: [
+          { inlineData: { data: base64Image, mimeType: 'image/png' } },
+          { text: `Upscale this image to high resolution (${size}), significantly enhancing fine details, textures, and clarity while strictly maintaining the original composition and artistic style. Preserve every element of the scene but render it with ultra-high fidelity. Original context: ${originalPrompt}` }
+        ]
+      },
+      config: {
+        imageConfig: {
+          imageSize: size
+        }
+      }
+    });
+
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+    throw new Error("Upscale failed");
+  }
+
   static async generateVideo(prompt: string, aspectRatio: '16:9' | '9:16', base64Image?: string, resolution: '720p' | '1080p' = '720p') {
     const ai = this.getAI();
     
@@ -253,7 +293,7 @@ export class GeminiService {
     const ai = this.getAI();
     
     const instructions = `
-      Task: Perform ultra-high-fidelity audio transcription with expert-level linguistic accuracy for Hobbs Studio.
+      Task: Perform ultra-high-fidelity audio transcription with expert-level linguistic accuracy and speaker identification for Hobbs Studio.
       
       Linguistic Engine Calibration:
       - Primary Language: ${config.language}
@@ -261,14 +301,18 @@ export class GeminiService {
       - Semantic Industry Domain: ${config.domain}
       - Acoustic Environment: ${config.acousticEnvironment || 'General Recording'}
       
-      Participant Map:
-      - Map detected speakers to these names if provided: ${config.speakerNames || 'Anonymous (use [Speaker N] tags)'}
-      - Expected Speaker Count: ${config.speakerCount}
+      Speaker Diarization Protocol:
+      - Mode: ${config.enableDiarization ? 'Neural Diarization Enabled' : 'Standard Transcription'}
+      - Participant Map: ${config.speakerNames || 'Anonymous (use labels like [Speaker 1], [Speaker 2], etc.)'}
+      - Target Speaker Resolution: ${config.speakerCount}
       
-      Speech Logic:
-      - Diarization: ${config.enableDiarization ? 'Enabled' : 'Disabled'}
-      - Content Mode: ${config.cleanFillers ? 'Clean Read (Remove um/uh)' : 'Verbatim (Raw Utterances)'}
-      ${config.keywords ? `- Critical Technical Terminology: ${config.keywords}` : ''}
+      Output Formatting Rules:
+      1. Every time the speaker changes, start a NEW LINE.
+      2. Prefix every turn with the speaker's name or tag in brackets, e.g., "[Speaker Name]: " or "[Speaker 1]: ".
+      3. Content Mode: ${config.cleanFillers ? 'Clean Read (Strictly remove all "um", "uh", "like", "you know" filler words)' : 'Verbatim (Include all raw utterances and disfluencies)'}
+      ${config.keywords ? `4. Critical Technical Nodes to Resolve: ${config.keywords}` : ''}
+      
+      Ensure the resulting text is formatted as a professional transcript ready for executive review.
     `;
 
     const response = await ai.models.generateContent({

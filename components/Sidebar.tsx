@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 backgroundColor: `${platformConfig.brandColor}33`,
                 borderColor: `${platformConfig.brandColor}33`
               }}
-            >{credits.tier}</span>
+            >{credits.tier === 'Beginner' ? 'Beginner' : credits.tier}</span>
           </div>
           <div className="relative z-10">
             <div className="text-2xl font-black tracking-tighter italic uppercase text-neutral-100">{credits.balance.toLocaleString()}</div>

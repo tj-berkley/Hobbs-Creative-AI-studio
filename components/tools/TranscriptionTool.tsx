@@ -32,12 +32,12 @@ const ENVIRONMENTS = [
 ];
 
 const SPEAKER_OPTIONS = [
-  { id: 'auto', label: 'Auto-Diarize', icon: 'fa-robot', desc: 'Detect & Label' },
-  { id: '1', label: 'Monologue', icon: 'fa-user', desc: '1 Speaker' },
+  { id: 'auto', label: 'Neural Diarization', icon: 'fa-brain-circuit', desc: 'Auto-Detect & Label' },
+  { id: '1', label: 'Single Speaker', icon: 'fa-user', desc: 'Monologue Mode' },
   { id: '2', label: 'Dialogue', icon: 'fa-user-group', desc: '2 Speakers' },
   { id: '3', label: 'Small Group', icon: 'fa-users', desc: '3 Speakers' },
-  { id: '4', label: 'Discussion', icon: 'fa-users-between-lines', desc: '4 Speakers' },
-  { id: '5+', label: 'Panel', icon: 'fa-users-viewfinder', desc: '5+ Speakers' }
+  { id: '4', label: 'Multi-Channel', icon: 'fa-users-between-lines', desc: '4 Speakers' },
+  { id: '5+', label: 'Panel/Board', icon: 'fa-users-viewfinder', desc: '5+ Speakers' }
 ];
 
 const TranscriptionTool: React.FC = () => {
@@ -79,17 +79,20 @@ const TranscriptionTool: React.FC = () => {
     if (!audioFile || isTranscribing) return;
     setIsTranscribing(true);
     setTranscription(null);
+    
+    // Explicitly handle "auto" as a request for model-driven diarization
     const config: TranscriptionConfig = {
       language: LANGUAGES.find(l => l.id === selectedLanguage)?.name || selectedLanguage,
       dialectDetails,
       domain: selectedDomain,
-      speakerCount: speakerCount === 'auto' ? 'Detect Automatically and Diarize' : speakerCount,
+      speakerCount: speakerCount === 'auto' ? 'Neural Diarization: Automatically identify and label distinct speakers.' : `${speakerCount} Speakers`,
       speakerNames,
       cleanFillers,
       enableDiarization: speakerCount === 'auto' ? true : enableDiarization,
       keywords,
       acousticEnvironment: selectedEnv
     };
+
     try {
       const result = await GeminiService.transcribeAudio(audioFile.data, config);
       setTranscription(result || "Neural processing yielded no text.");
@@ -220,7 +223,7 @@ const TranscriptionTool: React.FC = () => {
                     className={`p-3 rounded-xl border text-left transition-all duration-300 flex items-center space-x-3 ${
                       selectedEnv === env.id
                         ? 'bg-teal-600 border-teal-400 text-white shadow-lg'
-                        : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-teal-500/50'
+                        : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-teal-500/50'
                     }`}
                   >
                     <i className={`fas ${env.icon} text-[10px]`}></i>
@@ -236,7 +239,7 @@ const TranscriptionTool: React.FC = () => {
         {activeStep === 3 && (
           <div className="space-y-6 animate-fade-in">
             <div className="space-y-4">
-              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Speaker Intelligence Configuration</label>
+              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Neural Diarization Engine</label>
               <div className="grid grid-cols-2 gap-2">
                 {SPEAKER_OPTIONS.map((opt) => (
                   <button
@@ -245,7 +248,7 @@ const TranscriptionTool: React.FC = () => {
                     className={`p-3 rounded-xl border text-left transition-all duration-300 flex items-center space-x-3 relative overflow-hidden group ${
                       speakerCount === opt.id
                         ? 'bg-teal-600 border-teal-400 text-white shadow-lg scale-[1.02]'
-                        : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-teal-500/50'
+                        : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 hover:border-teal-500/50'
                     }`}
                   >
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${speakerCount === opt.id ? 'bg-white/20' : 'bg-neutral-100 dark:bg-neutral-800'}`}>
@@ -265,8 +268,8 @@ const TranscriptionTool: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <i className="fas fa-fingerprint text-teal-500"></i>
                   <div>
-                    <p className="text-[10px] font-black text-neutral-900 dark:text-white uppercase tracking-tight">Diarization Engine</p>
-                    <p className="text-[8px] text-neutral-400 font-bold uppercase tracking-tighter">Automatic speaker identification</p>
+                    <p className="text-[10px] font-black text-neutral-900 dark:text-white uppercase tracking-tight">Dynamic Participant Mapping</p>
+                    <p className="text-[8px] text-neutral-400 font-bold uppercase tracking-tighter">Automatic speaker turn detection</p>
                   </div>
                 </div>
                 <button 
@@ -296,12 +299,12 @@ const TranscriptionTool: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Speaker Mapping (Optional)</label>
+              <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em] px-1">Participant Identity Registry</label>
               <input 
                 type="text" 
                 value={speakerNames}
                 onChange={e => setSpeakerNames(e.target.value)}
-                placeholder="Speaker 1: Alice, Speaker 2: Bob..."
+                placeholder="Assign names to diarized nodes (e.g. Speaker 1: Alice, Speaker 2: Bob)..."
                 className="w-full bg-neutral-50 dark:bg-black/40 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-3 text-[11px] font-bold text-neutral-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 shadow-inner"
               />
             </div>
@@ -332,7 +335,7 @@ const TranscriptionTool: React.FC = () => {
               className="flex-1 py-4 bg-teal-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-teal-500 transition-all shadow-xl flex items-center justify-center space-x-3 active:scale-95 disabled:opacity-30"
             >
               {isTranscribing ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-brain"></i>}
-              <span>{isTranscribing ? 'Decoding...' : 'Initiate Decode'}</span>
+              <span>{isTranscribing ? 'Decoding Nodes...' : 'Initiate Neural Decode'}</span>
             </button>
           )}
         </div>
@@ -341,8 +344,15 @@ const TranscriptionTool: React.FC = () => {
       {/* Results Viewport */}
       <div className="flex-1 bg-white/50 dark:bg-neutral-900/10 rounded-[2.5rem] border border-neutral-200 dark:border-neutral-800 flex flex-col overflow-hidden relative shadow-sm dark:shadow-2xl theme-transition">
         <div className="absolute top-6 left-8 z-10 flex items-center justify-between w-[calc(100%-4rem)]">
-           <div className="bg-white/80 dark:bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">
-             {selectedDomain} Intelligence Layer
+           <div className="flex items-center space-x-3">
+              <div className="bg-white/80 dark:bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 text-[10px] font-black text-neutral-500 uppercase tracking-[0.2em]">
+                {selectedDomain} Intelligence Layer
+              </div>
+              {speakerCount === 'auto' && (
+                <div className="bg-teal-500/10 text-teal-500 border border-teal-500/20 px-3 py-1 rounded-full text-[8px] font-black uppercase italic tracking-widest">
+                   <i className="fas fa-microchip mr-1.5"></i> Diarization Active
+                </div>
+              )}
            </div>
            {transcription && (
              <button onClick={handleCopy} className={`flex items-center space-x-2 px-4 py-1.5 rounded-full border transition-all ${isCopied ? 'bg-teal-500/10 border-teal-500/20 text-teal-600' : 'bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-400'}`}>
@@ -358,7 +368,7 @@ const TranscriptionTool: React.FC = () => {
               <div className="w-16 h-16 border-[6px] border-teal-500 border-t-transparent rounded-full animate-spin"></div>
               <div className="space-y-2">
                 <p className="text-neutral-900 dark:text-white font-black uppercase tracking-widest text-xs italic">Resolving Neural Nodes...</p>
-                <p className="text-neutral-400 text-[9px] font-bold uppercase tracking-tighter">Automatic Diarization active: mapping speakers & semantic context</p>
+                <p className="text-neutral-400 text-[9px] font-bold uppercase tracking-tighter">Mapping speakers & establishing semantic context protocol</p>
               </div>
             </div>
           ) : transcription ? (
@@ -374,7 +384,7 @@ const TranscriptionTool: React.FC = () => {
               </div>
               <div className="space-y-2">
                 <p className="text-[11px] font-black uppercase tracking-tighter">Linguistic Decoding System</p>
-                <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Complete steps 1-3 to initiate precision speaker labeling.</p>
+                <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest">Configure steps 1-3 to initiate precision speaker labeling and diarization.</p>
               </div>
             </div>
           )}

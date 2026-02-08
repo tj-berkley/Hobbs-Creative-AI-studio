@@ -9,6 +9,8 @@ const ImageStudio: React.FC = () => {
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [imageSize, setImageSize] = useState('1K');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isUpscaling, setIsUpscaling] = useState(false);
+  const [upscaleTarget, setUpscaleTarget] = useState<'2K' | '4K'>('2K');
   const [result, setResult] = useState<ImageResult | null>(null);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,6 +65,36 @@ const ImageStudio: React.FC = () => {
       console.error(err);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleUpscale = async (item: ImageResult, size: '2K' | '4K') => {
+    if (isUpscaling) return;
+    setIsUpscaling(true);
+    try {
+      if (typeof (window as any).aistudio?.hasSelectedApiKey === 'function') {
+        const hasKey = await (window as any).aistudio.hasSelectedApiKey();
+        if (!hasKey) await (window as any).aistudio.openSelectKey();
+      }
+
+      const base64 = item.url.split(',')[1];
+      const upscaledUrl = await GeminiService.upscaleImage(base64, size, item.prompt);
+      
+      const newResult: ImageResult = {
+        url: upscaledUrl,
+        prompt: `Upscaled (${size}): ${item.prompt}`,
+        timestamp: Date.now()
+      };
+
+      setResult(newResult);
+      setHistory(prev => [newResult, ...prev]);
+    } catch (err: any) {
+      console.error("Upscale failed", err);
+      if (err.message?.includes("Requested entity was not found") && typeof (window as any).aistudio?.openSelectKey === 'function') {
+        await (window as any).aistudio.openSelectKey();
+      }
+    } finally {
+      setIsUpscaling(false);
     }
   };
 
@@ -156,6 +188,25 @@ const ImageStudio: React.FC = () => {
             </div>
           </div>
 
+          {/* Upscale Settings */}
+          <div className="pt-4 border-t border-neutral-100 dark:border-neutral-900/50">
+            <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-3 px-1">Upscale Calibration</label>
+            <div className="flex bg-neutral-100 dark:bg-neutral-900 p-1 rounded-2xl border border-neutral-200 dark:border-neutral-800">
+              <button 
+                onClick={() => setUpscaleTarget('2K')}
+                className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${upscaleTarget === '2K' ? 'bg-white dark:bg-neutral-800 text-purple-600 shadow-sm' : 'text-neutral-400 hover:text-neutral-600'}`}
+              >
+                2K Ultra
+              </button>
+              <button 
+                onClick={() => setUpscaleTarget('4K')}
+                className={`flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${upscaleTarget === '4K' ? 'bg-purple-600 text-white shadow-lg' : 'text-neutral-400 hover:text-neutral-600'}`}
+              >
+                4K Master
+              </button>
+            </div>
+          </div>
+
           {/* Enhanced History Panel */}
           <div className="pt-6 border-t border-neutral-100 dark:border-neutral-900/50 space-y-4 pb-4">
             <div className="flex justify-between items-center px-1">
@@ -203,26 +254,26 @@ const ImageStudio: React.FC = () => {
                   <img src={item.url} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="History Node" />
                   
                   {/* Hover Quick Actions */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-2">
-                    <div className="flex space-x-1.5">
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center space-y-1.5">
+                    <div className="flex space-x-1">
                       <button 
                         onClick={(e) => { e.stopPropagation(); downloadImage(item.url, `archive-${item.timestamp}.png`); }}
-                        className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors"
+                        className="w-6 h-6 rounded-lg bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors"
                         title="Quick Download"
                       >
-                        <i className="fas fa-download text-[10px]"></i>
+                        <i className="fas fa-download text-[8px]"></i>
                       </button>
                       <button 
-                        onClick={(e) => { e.stopPropagation(); copyPrompt(item.prompt, item.timestamp); }}
-                        className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-colors"
-                        title="Copy Prompt"
+                        onClick={(e) => { e.stopPropagation(); handleUpscale(item, upscaleTarget); }}
+                        className="w-6 h-6 rounded-lg bg-purple-600/60 hover:bg-purple-600 text-white flex items-center justify-center transition-colors"
+                        title={`Upscale to ${upscaleTarget}`}
                       >
-                        <i className={`fas ${isCopied === item.timestamp ? 'fa-check text-green-400' : 'fa-copy'} text-[10px]`}></i>
+                        <i className="fas fa-up-right-and-down-left-from-center text-[8px]"></i>
                       </button>
                     </div>
                     <button 
                       onClick={(e) => deleteHistoryItem(item.timestamp, e)}
-                      className="text-[8px] font-black text-red-400 hover:text-red-300 uppercase tracking-tighter transition-colors"
+                      className="text-[7px] font-black text-red-400 hover:text-red-300 uppercase tracking-tighter transition-colors"
                     >
                       Delete
                     </button>
@@ -244,7 +295,7 @@ const ImageStudio: React.FC = () => {
 
         <button
           onClick={handleGenerate}
-          disabled={isGenerating || !prompt.trim()}
+          disabled={isGenerating || isUpscaling || !prompt.trim()}
           className="w-full py-5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-purple-900/20 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95 flex items-center justify-center space-x-2"
         >
           {isGenerating ? (
@@ -263,15 +314,17 @@ const ImageStudio: React.FC = () => {
 
       {/* Viewport */}
       <div className="flex-1 bg-white dark:bg-neutral-950 rounded-[2.5rem] border border-neutral-200 dark:border-neutral-900 flex items-center justify-center p-6 relative overflow-hidden shadow-sm dark:shadow-2xl theme-transition">
-        {isGenerating ? (
+        {(isGenerating || isUpscaling) ? (
           <div className="text-center space-y-8 animate-pulse">
             <div className="relative w-20 h-20 mx-auto">
-              <div className="absolute inset-0 border-4 border-purple-600/10 rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className={`absolute inset-0 border-4 ${isUpscaling ? 'border-indigo-600' : 'border-purple-600'}/10 rounded-full`}></div>
+              <div className={`absolute inset-0 border-4 ${isUpscaling ? 'border-indigo-600' : 'border-purple-600'} border-t-transparent rounded-full animate-spin`}></div>
             </div>
             <div className="space-y-2">
-              <p className="text-neutral-900 dark:text-white font-black uppercase tracking-widest text-sm italic">Gemini 3 Pro Active</p>
-              <p className="text-neutral-400 dark:text-neutral-600 text-[10px] uppercase font-bold tracking-tighter">Crafting high-fidelity visual nodes...</p>
+              <p className="text-neutral-900 dark:text-white font-black uppercase tracking-widest text-sm italic">{isUpscaling ? 'Neural Upscaling Active' : 'Gemini 3 Pro Active'}</p>
+              <p className="text-neutral-400 dark:text-neutral-600 text-[10px] uppercase font-bold tracking-tighter">
+                {isUpscaling ? `Enhancing resolution to ${upscaleTarget} cluster...` : 'Crafting high-fidelity visual nodes...'}
+              </p>
             </div>
           </div>
         ) : result ? (
@@ -279,6 +332,13 @@ const ImageStudio: React.FC = () => {
             <img src={result.url} alt="Generated Result" className="h-full w-full object-contain rounded-2xl shadow-2xl transition-all duration-700 group-hover:scale-[1.01]" />
             
             <div className="absolute bottom-6 right-6 flex space-x-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
+              <button 
+                onClick={() => handleUpscale(result, upscaleTarget)}
+                className="p-4 bg-indigo-600 backdrop-blur-md rounded-2xl text-white border border-white/20 hover:scale-110 active:scale-95 transition shadow-2xl"
+                title={`Upscale to ${upscaleTarget}`}
+              >
+                <i className="fas fa-up-right-and-down-left-from-center"></i>
+              </button>
               <button 
                 onClick={() => setIsBroadcasting(true)}
                 className="p-4 bg-emerald-600 backdrop-blur-md rounded-2xl text-white border border-white/20 hover:scale-110 active:scale-95 transition shadow-2xl"
