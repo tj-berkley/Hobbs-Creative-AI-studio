@@ -1,12 +1,14 @@
 
 import { StudioToolType, ToolDefinition } from './types';
 
+export const HOBBS_AVATAR = "https://files.oaiusercontent.com/file-23oXlXmRntKxM8v6W3UqL7?se=2025-02-21T16%3A31%3A32Z&sp=r&sv=24.12.0&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3D4594c348-1854-46c5-a6a3-c5b5974a946c.webp&sig=I2Y9p7Hq7kK6yvY6k%2Ba/vD0qF6jH6k6k6k6k6k6k6k%3D";
+
 export const TOOLS: ToolDefinition[] = [
   {
     id: StudioToolType.CHAT,
-    name: 'Intelligent Chat',
-    description: 'Advanced reasoning, Google Search, and thinking mode.',
-    icon: 'fa-comments',
+    name: 'Hobbs AI',
+    description: 'Direct consultation with the visionary mogul of the studio.',
+    icon: 'fa-user-tie',
     color: 'blue'
   },
   {
@@ -57,6 +59,13 @@ export const TOOLS: ToolDefinition[] = [
     description: 'Precise audio to text transcription.',
     icon: 'fa-quote-left',
     color: 'teal'
+  },
+  {
+    id: StudioToolType.BILLING,
+    name: 'Subscription',
+    description: 'Manage plan and credits.',
+    icon: 'fa-credit-card',
+    color: 'emerald'
   },
   {
     id: StudioToolType.DEVELOPER,

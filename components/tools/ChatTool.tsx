@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GeminiService } from '../../services/geminiService';
 import { ChatMessage } from '../../types';
+import { HOBBS_AVATAR } from '../../constants';
 
 const ChatTool: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -52,7 +53,7 @@ const ChatTool: React.FC = () => {
       console.error(error);
       const errorMsg: ChatMessage = {
         role: 'model',
-        text: "Error: Failed to reach the creative intelligence. Please check your connection.",
+        text: "Error: Failed to reach the Hobbs AI core. Please check your secure connection.",
         id: (Date.now() + 1).toString(),
         timestamp: Date.now()
       };
@@ -63,62 +64,76 @@ const ChatTool: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col p-8">
+    <div className="h-full flex flex-col p-8 bg-neutral-50 dark:bg-black/20">
       <div className="flex-1 overflow-y-auto space-y-6 mb-8 pr-4 custom-scrollbar" ref={scrollRef}>
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-neutral-400 dark:text-neutral-600 space-y-6">
-            <i className="fas fa-brain text-6xl opacity-20 dark:opacity-10 animate-pulse"></i>
-            <div className="text-center">
-              <p className="text-lg font-bold text-neutral-800 dark:text-neutral-200">Creative Hub Active</p>
-              <p className="text-sm font-medium">Inquiry required to proceed.</p>
+          <div className="flex flex-col items-center justify-center h-full text-neutral-400 dark:text-neutral-600 space-y-8 animate-fade-in">
+            <div className="w-32 h-32 rounded-[2.5rem] overflow-hidden border-2 border-indigo-600/30 shadow-2xl shadow-indigo-600/10">
+              <img src={HOBBS_AVATAR} alt="Hobbs" className="w-full h-full object-cover grayscale" />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-xl font-black text-neutral-900 dark:text-white uppercase tracking-tighter italic">Hobbs Core Intelligence</p>
+              <p className="text-sm font-bold uppercase tracking-widest text-indigo-600/60 italic">Platform Strategy Active</p>
             </div>
             <div className="grid grid-cols-2 gap-4 w-full max-w-md mt-4">
-              <button onClick={() => setInput("Draft a studio manifest for Hobbs.")} className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-xs font-bold uppercase tracking-tight text-left hover:border-indigo-500 transition shadow-sm">
-                "Draft a studio manifest for Hobbs."
+              <button onClick={() => setInput("Draft a studio manifest for Hobbs.")} className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-left hover:border-indigo-500 transition shadow-sm group">
+                <i className="fas fa-file-invoice text-indigo-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <br />Manifest Request
               </button>
-              <button onClick={() => setInput("Latest trends in cinematic generative AI.")} className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-xs font-bold uppercase tracking-tight text-left hover:border-indigo-500 transition shadow-sm">
-                "Latest trends in cinematic AI."
+              <button onClick={() => setInput("Latest trends in cinematic generative AI.")} className="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-left hover:border-indigo-500 transition shadow-sm group">
+                <i className="fas fa-chart-line text-indigo-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <br />Market Analysis
               </button>
             </div>
           </div>
         )}
         {messages.map((m) => (
           <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-[fadeIn_0.3s_ease-out]`}>
-            <div className={`max-w-[85%] rounded-[2rem] px-8 py-5 shadow-sm border ${
-              m.role === 'user' 
-                ? 'bg-indigo-600 border-indigo-500 text-white shadow-indigo-600/10' 
-                : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200'
-            }`}>
-              <div className="whitespace-pre-wrap text-[13px] leading-relaxed font-medium">{m.text}</div>
-              {m.groundingMetadata?.groundingChunks && (
-                <div className="mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
-                  <p className="text-[9px] font-black text-neutral-400 dark:text-neutral-600 mb-3 uppercase tracking-widest">Neural Grounds</p>
-                  <div className="flex flex-wrap gap-2">
-                    {m.groundingMetadata.groundingChunks.map((chunk: any, i: number) => {
-                      const link = chunk.web?.uri || chunk.maps?.uri;
-                      const title = chunk.web?.title || chunk.maps?.title || `Ref ${i+1}`;
-                      return link ? (
-                        <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-neutral-50 dark:bg-black/40 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition">
-                          <i className="fas fa-link mr-1.5 opacity-40"></i> {title}
-                        </a>
-                      ) : null;
-                    })}
-                  </div>
+            <div className={`flex items-start space-x-4 max-w-[85%] ${m.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+              {!m.role.includes('user') && (
+                <div className="w-8 h-8 rounded-lg overflow-hidden border border-indigo-500/20 shadow-sm shrink-0 mt-1">
+                  <img src={HOBBS_AVATAR} alt="Hobbs" className="w-full h-full object-cover" />
                 </div>
               )}
+              <div className={`rounded-[2rem] px-8 py-5 shadow-sm border ${
+                m.role === 'user' 
+                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-indigo-600/10' 
+                  : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200'
+              }`}>
+                <div className="whitespace-pre-wrap text-[13px] leading-relaxed font-medium">{m.text}</div>
+                {m.groundingMetadata?.groundingChunks && (
+                  <div className="mt-5 pt-5 border-t border-neutral-100 dark:border-neutral-800">
+                    <p className="text-[9px] font-black text-neutral-400 dark:text-neutral-600 mb-3 uppercase tracking-widest">Neural Grounds</p>
+                    <div className="flex flex-wrap gap-2">
+                      {m.groundingMetadata.groundingChunks.map((chunk: any, i: number) => {
+                        const link = chunk.web?.uri || chunk.maps?.uri;
+                        const title = chunk.web?.title || chunk.maps?.title || `Ref ${i+1}`;
+                        return link ? (
+                          <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-neutral-50 dark:bg-black/40 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition">
+                            <i className="fas fa-link mr-1.5 opacity-40"></i> {title}
+                          </a>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         ))}
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full px-6 py-3 flex items-center space-x-3 shadow-sm">
-              <div className="flex space-x-1.5">
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-              </div>
-              <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Thinking</span>
-            </div>
+          <div className="flex justify-start items-center space-x-4">
+             <div className="w-8 h-8 rounded-lg overflow-hidden border border-indigo-500/10 shadow-sm shrink-0">
+               <img src={HOBBS_AVATAR} alt="Hobbs" className="w-full h-full object-cover grayscale opacity-50" />
+             </div>
+             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-full px-6 py-3 flex items-center space-x-3 shadow-sm">
+                <div className="flex space-x-1.5">
+                  <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
+                  <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                </div>
+                <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Processing</span>
+             </div>
           </div>
         )}
       </div>
@@ -164,7 +179,7 @@ const ChatTool: React.FC = () => {
                 handleSend();
               }
             }}
-            placeholder="Type your creative request here..."
+            placeholder="Address Hobbs directly with your inquiry..."
             className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-[1.5rem] p-6 pr-20 focus:outline-none focus:ring-4 focus:ring-indigo-600/10 resize-none h-32 text-neutral-900 dark:text-neutral-200 transition-all duration-300 shadow-sm font-medium text-[13px] placeholder:text-neutral-300 dark:placeholder:text-neutral-700"
           />
           <button

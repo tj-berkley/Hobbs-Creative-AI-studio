@@ -8,7 +8,8 @@ export enum StudioToolType {
   LIVE_VOICE = 'LIVE_VOICE',
   CONTENT_ANALYSIS = 'CONTENT_ANALYSIS',
   TRANSCRIPTION = 'TRANSCRIPTION',
-  DEVELOPER = 'DEVELOPER'
+  DEVELOPER = 'DEVELOPER',
+  BILLING = 'BILLING'
 }
 
 export interface ToolDefinition {
@@ -37,4 +38,9 @@ export interface VideoResult {
   url: string;
   prompt: string;
   timestamp: number;
+}
+
+export interface UserCredits {
+  balance: number;
+  tier: 'Nano' | 'Studio Pro' | 'Enterprise';
 }

@@ -11,7 +11,7 @@ export interface TranscriptionConfig {
   cleanFillers: boolean;
   enableDiarization: boolean;
   keywords?: string;
-  acousticEnvironment?: string; // New field for accuracy
+  acousticEnvironment?: string;
 }
 
 export class GeminiService {
@@ -21,7 +21,9 @@ export class GeminiService {
 
   static async chat(message: string, options: { useThinking?: boolean; useSearch?: boolean; useMaps?: boolean } = {}) {
     const ai = this.getAI();
-    const config: any = {};
+    const config: any = {
+      systemInstruction: "You are Hobbs, the visionary mogul and mastermind behind Hobbs Creative Studio. You are authoritative, highly intelligent, business-oriented, and confident. You speak with precision and a direct, high-level tone. You are the user's primary consultant for all things creative technology. Avoid fluff; provide elite-tier insights."
+    };
     
     if (options.useThinking) {
       config.thinkingConfig = { thinkingBudget: 32768 };
@@ -156,12 +158,6 @@ export class GeminiService {
       - Diarization: ${config.enableDiarization ? 'Enabled' : 'Disabled'}
       - Content Mode: ${config.cleanFillers ? 'Clean Read (Remove um/uh)' : 'Verbatim (Raw Utterances)'}
       ${config.keywords ? `- Critical Technical Terminology: ${config.keywords}` : ''}
-      
-      Execution Directives: 
-      1. Calibrate your phoneme recognition based on the "Regional Dialect" and "Acoustic Environment" hints to minimize errors in accented speech or noisy environments.
-      2. If Diarization is Enabled, identify unique vocal signatures and label them consistently throughout the session.
-      3. Use industry-standard terminology based on the "Semantic Industry Domain".
-      4. Return ONLY the finalized, formatted transcription text.
     `;
 
     const response = await ai.models.generateContent({
@@ -180,10 +176,29 @@ export class GeminiService {
     voiceName?: string, 
     pitch?: number, 
     speakingRate?: number,
+    emotion?: string,
+    timbre?: string,
+    reverb?: number,
+    echo?: number,
+    delay?: number,
     referenceAudio?: { data: string, mimeType: string } 
   }) {
     const ai = this.getAI();
     const parts: any[] = [];
+
+    const reverbDesc = options.reverb && options.reverb > 10 ? `Apply a ${options.reverb}% intensity wet reverb, sounding like a ${options.reverb > 70 ? 'vast hall' : options.reverb > 40 ? 'large room' : 'small chamber'}.` : '';
+    const echoDesc = options.echo && options.echo > 10 ? `Add a distinct slapback echo with ${options.echo}% intensity.` : '';
+    const delayDesc = options.delay && options.delay > 10 ? `Apply a feedback delay effect at ${options.delay}% intensity.` : '';
+
+    const styleDirectives = [
+      options.emotion ? `Speak with a very prominent ${options.emotion} emotion.` : '',
+      options.timbre ? `Apply a ${options.timbre} vocal timbre characteristic.` : '',
+      reverbDesc,
+      echoDesc,
+      delayDesc,
+      options.speakingRate ? `Speak at a ${options.speakingRate > 1.2 ? 'fast' : options.speakingRate < 0.8 ? 'slow' : 'normal'} pace.` : '',
+      options.pitch ? `Speak with a ${options.pitch > 1.2 ? 'high-pitched' : options.pitch < 0.8 ? 'deep, low-pitched' : 'natural'} voice.` : ''
+    ].filter(Boolean).join(' ');
 
     if (options.referenceAudio) {
       parts.push({
@@ -193,10 +208,12 @@ export class GeminiService {
         }
       });
       parts.push({
-        text: `Analyze the speaker's voice in the provided audio sample. Then, speak the following text in that EXACT same voice, tone, and inflection: "${text}"`
+        text: `Analyze the speaker's voice in the provided audio sample. Then, speak the following text in that EXACT same voice, tone, and inflection: "${text}". Critical Audio Modulation: ${styleDirectives}`
       });
     } else {
-      parts.push({ text });
+      parts.push({ 
+        text: `${styleDirectives} Speak the following text: "${text}"`
+      });
     }
 
     const response = await ai.models.generateContent({
@@ -204,7 +221,6 @@ export class GeminiService {
       contents: [{ parts }],
       config: {
         responseModalities: [Modality.AUDIO],
-        // Fix: pitch and speakingRate are not valid properties of VoiceConfig in the current SDK
         speechConfig: options.referenceAudio ? undefined : {
           voiceConfig: {
             prebuiltVoiceConfig: { voiceName: options.voiceName || 'Zephyr' },
