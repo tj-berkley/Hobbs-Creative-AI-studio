@@ -29,7 +29,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
           email 
         });
       } else {
-        setError('Please authenticate with valid Klub credentials.');
+        setError('Please authenticate with valid Hobbs credentials.');
       }
       setIsLoading(false);
     }, 1500);
@@ -62,7 +62,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
             <i className="fas fa-chess-knight text-emerald-400 text-5xl relative z-10 animate-float"></i>
           </div>
           <h2 className="text-4xl font-black uppercase italic tracking-tighter text-neutral-900 dark:text-white">
-            {mode === 'login' ? 'Klub Entry' : 'Establish Member'}
+            {mode === 'login' ? 'Hobbs Entry' : 'Establish Member'}
           </h2>
           <p className="text-[11px] text-neutral-500 dark:text-neutral-500 font-bold uppercase tracking-widest italic">
             {mode === 'login' ? 'Strategic Identity Verification Required' : 'Join the elite creative coordination matrix.'}
@@ -89,7 +89,7 @@ const AuthPortal: React.FC<AuthPortalProps> = ({ mode, onBack, onAuthSuccess, th
               value={email}
               onChange={e => setEmail(e.target.value)}
               className="w-full bg-neutral-50 dark:bg-black/50 border border-neutral-200 dark:border-neutral-800 rounded-2xl px-8 py-5 text-sm font-bold focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all shadow-inner dark:text-white placeholder:text-neutral-700"
-              placeholder="member@samklub.com"
+              placeholder="member@hobbsai.com"
               required
             />
           </div>
