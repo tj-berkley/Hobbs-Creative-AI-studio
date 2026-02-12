@@ -3,16 +3,23 @@
   "name": "hobbs-creative-studio",
   "version": "1.0.1",
   "description": "Elite Creative Platform powered by Gemini AI Core",
-  "main": "index.html",
+  "type": "module",
   "scripts": {
-    "start": "npx serve -s . -l 8080",
-    "dev": "npx serve . -l 8080"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "@google/genai": "^1.40.0",
-    "serve": "^14.2.4",
     "lucide-react": "^0.453.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
   }
 }
